@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit Settlement</title>
+  <script src="full-screenlogic.js"></script>
+  <link href="styles.css" rel="stylesheet">
+  <link href="payment.css" rel="stylesheet">
+  
+
+</head>
+<body>
+
+<!-- LOADING PAGE -->
+<div id="loadingPage">
+    <div class="loader-spinner"></div>
+    <div class="loading-text">Loading...</div>
+</div>
+
+  
+<!-- ==================================================
+     FULL SCREEN DEPOSIT PAGE
+================================================== -->
+
+<div id="depositOverlay" class="deposit-overlay">
+
+    <div class="deposit-page">
+
+
+        <!-- HEADER -->
+        <div class="deposit-header">
+
+            <button class="back-btn" onclick="returnHome()"></button>
+
+            <div class="deposit-title">
+                Deposit
+            </div>
+
+        </div>
+
+
+        <!-- PAYMENT TABS -->
+        <div class="payment-tabs">
+
+            <div
+                id="momoTab"
+                class="payment-tab active"
+                onclick="showMomo()"
+            >
+                MTN / Airtel
+            </div>
+
+            <div
+                id="usdtTab"
+                class="payment-tab"
+                onclick="showUsdt()"
+            >
+                CRYPTO
+            </div>
+
+        </div>
+
+
+        <!-- ===========================
+             MOBILE MONEY SECTION
+        ============================ -->
+        <div id="momoSection" class="momo-section active">
+
+            <!-- PHONE NUMBER -->
+            <div class="form-group">
+
+                <label class="form-label">
+                    MTN or Airtel number
+                </label>
+
+                <input
+                    type="tel"
+                    class="phone-input"
+                    id="phoneNumber"
+                    placeholder="0XXXXXXXXX MTN or Airtel number"
+                >
+
+            </div>
+
+
+            <!-- AMOUNT -->
+            <div class="form-group">
+
+                <div class="amount-row">
+
+                    <input
+                        type="number"
+                        class="amount-input"
+                        id="amountInput"
+                        placeholder="Please enter amount to deposit"
+                        oninput="updateAmount()"
+                    >
+
+                    <div class="amount-display">
+                        UGX <span id="amountDisplay">0.00</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- NOTE -->
+            <div class="note-box">
+
+                <div class="note-title">
+                    Note:
+                </div>
+
+                <div class="note-text">
+                    Enter the phone number you are using to pay
+                    (MTN or Airtel) to receive the company's
+                    payment details
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+
+      
+
+
+        <!-- ===========================
+             USDT SECTION
+        ============================ -->
+        <div id="usdtSection" class="usdt-section">
+
+            <div class="form-group">
+
+                <label class="form-label">
+                    Crypto wallet address
+                </label>
+
+            
+
+    <div style="display:flex; flex-direction:row; gap:12px;">
+
+      <!-- Bitcoin -->
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; background:#1a1d24; border:1px solid #2a2e37; border-radius:10px; padding:16px 8px; cursor:pointer;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#f7931a; color:#ffffff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px;">₿</div>
+        <span style="color:#f0f2f5; font-size:14px; font-weight:600;">Bitcoin</span>
+        <span style="color:#848e9c; font-size:11px;">BTC</span>
+      </div>
+
+      <!-- USDT ERC20 -->
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; background:#1a1d24; border:1px solid #2a2e37; border-radius:10px; padding:16px 8px; cursor:pointer;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#26a17b; color:#ffffff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:13px;">₮</div>
+        <span style="color:#f0f2f5; font-size:14px; font-weight:600;">USDT</span>
+        <span style="color:#848e9c; font-size:11px;">ERC20</span>
+      </div>
+
+      <!-- USDT TRC20 -->
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; background:#1a1d24; border:1px solid #2a2e37; border-radius:10px; padding:16px 8px; cursor:pointer;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#26a17b; color:#ffffff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:13px;">₮</div>
+        <span style="color:#f0f2f5; font-size:14px; font-weight:600;">USDT</span>
+        <span style="color:#848e9c; font-size:11px;">TRC20</span>
+      </div>
+
+    </div>
+  </>
+
+
+
+            </div>
+
+            <div class="form-group">
+
+                <div class="amount-row">
+
+                    <input
+                       id="usdtcrypto-amount"
+                        type="number"
+                        class="amount-input"
+                        placeholder="Please enter amount in UGX"
+                    >
+
+                    <div class="amount-display">
+                        UGX
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="note-box">
+
+                <div class="note-title">
+                    Note:
+                </div>
+
+                <div class="note-text">
+                    Enter the USDT amount you want to deposit. You will be provided with the cryto wallet addresses where you will use one of them to carry out deposit. We currently Use only BITCOIN wallet address
+                    
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- DEPOSIT BUTTON -->
+        <button
+            class="deposit-submit"
+            
+            
+
+            onclick="processDeposit()"
+        >
+            Continue
+        </button>
+
+    </div>
+
+</div>
+
+
+  <!--
+  CRYPTO PAYMENT CARD SYSTEM
+  -->
+
+  
+  <!--
+  MOBILE MONEY PAYMENT CARD SYSTEM
+  -->
+  <!-- HEADER -->
+        <div class="deposit-header">
+
+            <button class="back-btn" onclick="returnHome()"></button>
+
+            <div class="deposit-title">
+                Deposit
+            </div>
+
+        </div>
+  
+    <div class="payment-card">
+
+        <div class="header">
+            <h2>Confirm Payment</h2>
+            <p>Please review your details and complete the transfer.</p>
+        </div>
+<!-- Step 1 -->
+<div id="step-1">
+    <div class="section details-section">
+        <h3 class="section-title">1. Deposit Details</h3>
+
+        <div class="detail-row">
+            <span class="detail-label">Your Phone Number:</span>
+            <span class="detail-value" id="displayPhone">
+                077X XXX XXX
+            </span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Amount to Deposit:</span>
+            <span class="detail-value amount" id="displayAmount">
+                UGX 50,000
+            </span>
+        </div>
+    </div>
+
+    <button type="button" onclick="nextStep()" class="primary-button">
+        Continue to Payment
+    </button>
+</div>
+        <!-- Step 2 -->
+        <div id="step-2" class="step-hidden">
+            <div class="section payment-section">
+                <h3 class="section-title">2. Make the Transfer</h3>
+
+                <p class="payment-text">
+                    Send exactly <strong id="payment-text">UGX 50,000</strong> using MTN Mobile
+                    Money or Airtel Money to the following number:
+                </p>
+
+                <div class="number-box">
+                    <span class="number-label">Merchant Number</span>
+                    <span class="phone-number">0772 123 456</span>
+                    <span class="business-name">Name: John Doe Business</span>
+                </div>
+
+                <p class="dial-info">
+                    Dial *165# for MTN or *185# for Airtel to initiate the transfer.
+                </p>
+            </div>
+
+            <div class="button-row">
+                <button type="button" onclick="prevStep()" class="back-button">
+                    Back
+                </button>
+
+                <button type="button" onclick="nextStep()" class="primary-button">
+                    I've Sent the Money
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div id="step-3" class="step-hidden">
+            <form id="paymentForm" onsubmit="handlePaymentSubmit(event)">
+
+                <div class="form-section">
+                    <label for="transaction_id" class="form-label">
+                        3. Enter Transaction ID
+                    </label>
+
+                    <p class="help-text">
+                        After sending the money, you will receive an SMS.
+                        Enter the Transaction ID from that message below.
+                    </p>
+
+                    <input
+                        type="text"
+                        id="transaction_id"
+                        name="transaction_id"
+                        placeholder="e.g., 2038472910"
+                        required
+                        class="transaction-input"
+                    >
+                </div>
+
+                <div class="button-row">
+                    <button type="button" onclick="prevStep()" class="back-button">
+                        Back
+                    </button>
+
+                    <button type="submit" class="primary-button" id="momobtn">
+                        Confirm Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Verification Modal -->
+    <div id="verificationModal">
+        <div class="modal-box">
+            <div class="loader"></div>
+
+            <h3 class="modal-title">Verifying Payment...</h3>
+
+            <p class="modal-text">
+                Please wait while we verify your Transaction ID with the
+                network provider. Do not close this window.
+            </p>
+
+            <div class="transaction-display">
+                Checking ID:
+                <span id="displayTxId"></span>
+            </div>
+        </div>
+    </div>
+    
+
+<script type="module" src="authication.js"></script>
+<script type="module">
+  requireLogin();
+</script>
+    <script src="firestore-mm.js"> </script>
+    <script type="module" src="firestoreadminlogic.js"></script>
+
+
+</body>
+</html>
