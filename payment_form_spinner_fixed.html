@@ -1,382 +1,285 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deposit Settlement</title>
-  <script src="full-screenlogic.js"></script>
-  <link href="styles.css" rel="stylesheet">
-  <link href="payment.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mobile Money Payment</title>
+  <style>
+  * {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: black;
+  color: white;
+}
+     
+/* =========================
+   HEADER
+========================== */
+.deposit-header {
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+
+    .deposit-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    }
+    .back-btn {
+    position: absolute;
+    left: 13px;
+    top: 13px;
+    width: 25px;
+    height: 25px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    }
+    .back-btn::before {
+    content: "";
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-left: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: rotate(45deg);
+    left: 5px;
+    top: 5px;
+    }/* =========================
+       DEPOSIT FULL SCREEN
+    ========================== */
+    .deposit-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 8%;
+
+        background: #000;
+
+        z-index: 999999;
+
+        display: block;
+        overflow-y: auto;
+    }
+
   
 
+    /* Main deposit container */
+    .deposit-page {
+        min-height: 100dvh;
+        width: 100%;
+        padding: 0 11px 18px;
+        position: relative;
+    }
+
+
+.wrap {
+  min-height: 100vh;
+  margin-top: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.card {
+  width: 100%;
+  max-width: 430px;
+  background: black;
+  border-radius: 18px;
+  padding: 2px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  margin: 8px 0;
+  font-size: 25px;
+}
+
+
+.group {
+  margin: 18px 0;
+}
+
+.group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.group input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  font-size: 16px;
+  outline: none;
+}
+
+.group input:focus {
+  border-color: #2457d6;
+  box-shadow: 0 0 0 3px rgba(36, 87, 214, 0.12);
+}
+
+small {
+  display: block;
+  color: #667085;
+  margin-top: 6px;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #2457d6;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 10px;
+  background: black;
+  line-height: 1.45;
+  font-size: 14px;
+}
+
+.status.processing {
+  background: #fff8e6;
+  color: #8a5a00;
+}
+
+.status.success {
+  background: #ecfdf3;
+  color: #067647;
+}
+
+.status.error {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.details {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 7px 0;
+}
+
+.row + .row {
+  border-top: 1px solid #eaecf0;
+}
+
+.row span {
+  color: #667085;
+  font-size: 12px;
+}
+
+.row strong {
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.hidden {
+  display: none;
+}
+.btn {
+        width: 100%;
+        height: 48px;
+
+        margin-top: 80%;
+
+        border: 1px solid #0b96ff;
+        border-radius: 7px;
+
+        background: rgba(0, 14, 27, 0.9);
+
+        color: white;
+
+        font-size: 18px;
+        font-weight: bold;
+
+        cursor: pointer;
+
+        box-shadow:
+            0 0 6px rgba(0, 150, 255, 0.65),
+            inset 0 0 7px rgba(0, 100, 255, 0.15);
+
+        transition: 0.2s ease;
+  }
+  </style>
 </head>
 <body>
-
-<!-- LOADING PAGE -->
-<div id="loadingPage">
-    <div class="loader-spinner"></div>
-    <div class="loading-text">Loading...</div>
-</div>
-
-  
-<!-- ==================================================
-     FULL SCREEN DEPOSIT PAGE
-================================================== -->
-
-<div id="depositOverlay" class="deposit-overlay">
-
-    <div class="deposit-page">
-
-
+  <div class="deposit-overlay">
         <!-- HEADER -->
         <div class="deposit-header">
 
-            <button class="back-btn" onclick="returnHome()"></button>
+            <a class="back-btn" href="user-account.html"></a>
 
             <div class="deposit-title">
-                Deposit
+                Make a Payment
             </div>
-
         </div>
-
-
-        <!-- PAYMENT TABS -->
-        <div class="payment-tabs">
-
-            <div
-                id="momoTab"
-                class="payment-tab active"
-                onclick="showMomo()"
-            >
-                MTN / Airtel
-            </div>
-
-            <div
-                id="usdtTab"
-                class="payment-tab"
-                onclick="showUsdt()"
-            >
-                CRYPTO
-            </div>
-
         </div>
-
-
-        <!-- ===========================
-             MOBILE MONEY SECTION
-        ============================ -->
-        <div id="momoSection" class="momo-section active">
-
-            <!-- PHONE NUMBER -->
-            <div class="form-group">
-
-                <label class="form-label">
-                    MTN or Airtel number
-                </label>
-
-                <input
-                    type="tel"
-                    class="phone-input"
-                    id="phoneNumber"
-                    placeholder="0XXXXXXXXX MTN or Airtel number"
-                >
-
-            </div>
-
-
-            <!-- AMOUNT -->
-            <div class="form-group">
-
-                <div class="amount-row">
-
-                    <input
-                        type="number"
-                        class="amount-input"
-                        id="amountInput"
-                        placeholder="Please enter amount to deposit"
-                        oninput="updateAmount()"
-                    >
-
-                    <div class="amount-display">
-                        UGX <span id="amountDisplay">0.00</span>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- NOTE -->
-            <div class="note-box">
-
-                <div class="note-title">
-                    Note:
-                </div>
-
-                <div class="note-text">
-                    Enter the phone number you are using to pay
-                    (MTN or Airtel) to receive the company's
-                    payment details
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-
+  <main class="wrap">
+    <section class="card">
       
 
-
-        <!-- ===========================
-             USDT SECTION
-        ============================ -->
-        <div id="usdtSection" class="usdt-section">
-
-            <div class="form-group">
-
-                <label class="form-label">
-                    Crypto wallet address
-                </label>
-
-            
-
-    <div style="display:flex; flex-direction:row; gap:12px;">
-
-      <!-- Bitcoin -->
-      <div style="flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; background:#1a1d24; border:1px solid #2a2e37; border-radius:10px; padding:16px 8px; cursor:pointer;">
-        <div style="width:36px; height:36px; border-radius:50%; background:#f7931a; color:#ffffff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px;">₿</div>
-        <span style="color:#f0f2f5; font-size:14px; font-weight:600;">Bitcoin</span>
-        <span style="color:#848e9c; font-size:11px;">BTC</span>
-      </div>
-
-      <!-- USDT ERC20 -->
-      <div style="flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; background:#1a1d24; border:1px solid #2a2e37; border-radius:10px; padding:16px 8px; cursor:pointer;">
-        <div style="width:36px; height:36px; border-radius:50%; background:#26a17b; color:#ffffff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:13px;">₮</div>
-        <span style="color:#f0f2f5; font-size:14px; font-weight:600;">USDT</span>
-        <span style="color:#848e9c; font-size:11px;">ERC20</span>
-      </div>
-
-      <!-- USDT TRC20 -->
-      <div style="flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; background:#1a1d24; border:1px solid #2a2e37; border-radius:10px; padding:16px 8px; cursor:pointer;">
-        <div style="width:36px; height:36px; border-radius:50%; background:#26a17b; color:#ffffff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:13px;">₮</div>
-        <span style="color:#f0f2f5; font-size:14px; font-weight:600;">USDT</span>
-        <span style="color:#848e9c; font-size:11px;">TRC20</span>
-      </div>
-
-    </div>
-  </>
-
-
-
-            </div>
-
-            <div class="form-group">
-
-                <div class="amount-row">
-
-                    <input
-                       id="usdtcrypto-amount"
-                        type="number"
-                        class="amount-input"
-                        placeholder="Please enter amount in UGX"
-                    >
-
-                    <div class="amount-display">
-                        UGX
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="note-box">
-
-                <div class="note-title">
-                    Note:
-                </div>
-
-                <div class="note-text">
-                    Enter the USDT amount you want to deposit. You will be provided with the cryto wallet addresses where you will use one of them to carry out deposit. We currently Use only BITCOIN wallet address
-                    
-                </div>
-
-            </div>
-
+      <form id="paymentForm">
+      
+        <div class="group">
+          <label for="phone">Mobile Money Number</label>
+          <input id="phone" type="tel" inputmode="tel" placeholder="0771*****" required>
+          <small>MTN or Airtel Uganda</small>
         </div>
+        <div class="group">
+          <label for="amount">Amount (UGX)</label>
+          <input id="amount" type="number" min="500" max="10000000" step="1" placeholder="Enter Amount to deposut" required>
+          <small>Minimum Deposit UGX 15,000</small>
+        </div>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
 
-
-
-        <!-- DEPOSIT BUTTON -->
-        <button
-            class="deposit-submit"
-            
-            
-
-            onclick="processDeposit()"
-        >
-            Continue
-        </button>
-
-    </div>
-
-</div>
-
-
-  <!--
-  CRYPTO PAYMENT CARD SYSTEM
-  -->
+      <div id="details" class="details hidden">
+        <div class="row" style="display: none;"><span>Reference</span><strong id="reference">—</strong></div>
+        <div class="row"><span>Status</span><strong id="state">—</strong></div>
+      </div>
+      </form>
+      
+<button class="btn" id="payBtn" type="button">Pay Now</button>
+      
+    </section>
+  </main>
 
   
-  <!--
-  MOBILE MONEY PAYMENT CARD SYSTEM
-  -->
-  <!-- HEADER -->
-        <div class="deposit-header">
-
-            <button class="back-btn" onclick="returnHome()"></button>
-
-            <div class="deposit-title">
-                Deposit
-            </div>
-
-        </div>
   
-    <div class="payment-card">
 
-        <div class="header">
-            <h2>Confirm Payment</h2>
-            <p>Please review your details and complete the transfer.</p>
-        </div>
-<!-- Step 1 -->
-<div id="step-1">
-    <div class="section details-section">
-        <h3 class="section-title">1. Deposit Details</h3>
-
-        <div class="detail-row">
-            <span class="detail-label">Your Phone Number:</span>
-            <span class="detail-value" id="displayPhone">
-                077X XXX XXX
-            </span>
-        </div>
-
-        <div class="detail-row">
-            <span class="detail-label">Amount to Deposit:</span>
-            <span class="detail-value amount" id="displayAmount">
-                UGX 50,000
-            </span>
-        </div>
-    </div>
-
-    <button type="button" onclick="nextStep()" class="primary-button">
-        Continue to Payment
-    </button>
-</div>
-        <!-- Step 2 -->
-        <div id="step-2" class="step-hidden">
-            <div class="section payment-section">
-                <h3 class="section-title">2. Make the Transfer</h3>
-
-                <p class="payment-text">
-                    Send exactly <strong id="payment-text">UGX 50,000</strong> using MTN Mobile
-                    Money or Airtel Money to one of the following number:
-                </p>
-
-                <div class="number-box">
-                    <span class="number-label">AIRTEL Merchant Number</span>
-                    <span class="phone-number">******</span>
-                    <span class="business-name"> </span>
-                </div>
-              <div>OR</div>
-              <div class="number-box">
-                
-                    <span class="number-label">MTN Merchant Number</span>
-                    <span class="phone-number">0782871878</span>
-                    <span class="business-name"> </span>
-              </div>
-
-                <p class="dial-info">
-                    Dial *165# for MTN or *185# for Airtel to initiate the transfer.
-                </p>
-            </div>
-
-            <div class="button-row">
-                <button type="button" onclick="prevStep()" class="back-button">
-                    Back
-                </button>
-
-                <button type="button" onclick="nextStep()" class="primary-button">
-                    I've Sent the Money
-                </button>
-            </div>
-        </div>
-
-        <!-- Step 3 -->
-        <div id="step-3" class="step-hidden">
-            <form id="paymentForm" onsubmit="handlePaymentSubmit(event)">
-
-                <div class="form-section">
-                    <label for="transaction_id" class="form-label">
-                        3. Enter Transaction ID
-                    </label>
-
-                    <p class="help-text">
-                        After sending the money, you will receive an SMS.
-                        Enter the Transaction ID from that message below.
-                    </p>
-
-                    <input
-                        type="text"
-                        id="transaction_id"
-                        name="transaction_id"
-                        placeholder="e.g., 2038472910"
-                        required
-                        class="transaction-input"
-                    >
-                </div>
-
-                <div class="button-row">
-                    <button type="button" onclick="prevStep()" class="back-button">
-                        Back
-                    </button>
-
-                    <button type="submit" class="primary-button" id="momobtn">
-                        Confirm Payment
-                    </button>
-                </div>
-            </form>
-        </div>
-
-    </div>
-
-    <!-- Verification Modal -->
-    <div id="verificationModal">
-        <div class="modal-box">
-            <div class="loader"></div>
-
-            <h3 class="modal-title">Verifying Payment...</h3>
-
-            <p class="modal-text">
-                Please wait while we verify your Transaction ID with the
-                network provider. Do not close this window.
-            </p>
-
-            <div class="transaction-display">
-                Checking ID:
-                <span id="displayTxId"></span>
-            </div>
-        </div>
-    </div>
-    
-
-<script type="module" src="authication.js"></script>
-<script type="module">
-  requireLogin();
-</script>
-    <script src="firestore-mm.js"> </script>
+  
     <script type="module" src="firestoreadminlogic.js"></script>
-
-
 </body>
 </html>
