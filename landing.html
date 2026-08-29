@@ -113,8 +113,8 @@ Big tech companies have signaled AI spending won't slow down, with combined outl
     <div class="card"><div class="num">UGX 5,000.00</div><div class="lab">Reward & Bonus</div></div>
   </section>
   <section class="stats3" style="margin-bottom: 20px;">
-    <div class="card"><div class="num">0</div><div class="lab">Invite Count</div></div>
-    <div class="card"><div class="num">0</div><div class="lab">Team Count</div></div>
+    <div class="card"><div class="num"  id="num">0</div><div class="lab">Active Members</div></div>
+    <div class="card"><div class="num">$ 1.4 M</div><div class="lab">Total Withdraw</div></div>
     <div class="card"><div class="num">0.00</div><div class="lab">Team income</div></div>
   </section>
 
@@ -236,9 +236,34 @@ Big tech companies have signaled AI spending won't slow down, with combined outl
     <div style="padding-bottom: 75px;"></div>
     
   </div>
-    <script>
+    
         
-    </script>
+     
+  <script>
+    const CENTER = 10781;   // long-run average
+    const STEP = 1;        // change per tick
+    const INTERVAL_MS = 5000; // tick interval
+
+    let value = CENTER;
+    const el = document.getElementById('num');
+
+    function tick() {
+      // Pull probability toward the center: the farther we drift,
+      // the more likely the next step is back toward CENTER.
+      const distance = value - CENTER;
+      // base 50/50, skewed by distance (clamped so it never becomes certain)
+      const pullStrength = Math.min(0.45, Math.abs(distance) * 0.08);
+      let upProbability = 0.5 - Math.sign(distance) * pullStrength;
+
+      const goingUp = Math.random() < upProbability;
+      value += goingUp ? STEP : -STEP;
+
+      el.textContent = value;
+      el.style.color = value === CENTER ? '#f5f5f5' : (value > CENTER ? 'white' : 'white');
+    }
+
+    setInterval(tick, INTERVAL_MS);
+  </script>
    <script type="module" src="withdrawals.js"></script>
   <script type="module" src="firestoreadminlogic.js"></script>
   <script type="module" src="authication.js"></script>
