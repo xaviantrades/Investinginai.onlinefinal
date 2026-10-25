@@ -1,326 +1,344 @@
-<!DOCTYPE html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"><meta name=google content=notranslate><meta name=msapplication-TileColor content=#000000><meta name=theme-color content=#ffffff><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>Future Ai Hub</title><script>document.addEventListener('DOMContentLoaded', function() {
-                document.documentElement.style.fontSize = document.documentElement.clientWidth / 20 + 'px'
-            })</script><script src=./static/uni.webview.js></script><script>// 待触发 `UniAppJSBridgeReady` 事件后，即可调用 uni 的 API。
-			document.addEventListener('UniAppJSBridgeReady', function() {
-				console.log('UniAppJSBridgeReady');
-				webUni.getEnv(function(res) {
-					
-				});
-			});</script><link rel=stylesheet href=./static/index.883130ca.css></head><body><noscript><strong>Please enable JavaScript to continue.</strong></noscript><div class=waves></div><div id=app></div><script src=./static/js/chunk-vendors.395c67ec.js></script><script src=./static/js/index.a822f0e6.js></script></body><link href="wave-background.css" rel="stylesheet" scoped>
-  
-  <body>
-
-<!----LOGIN HTTML PAGE-->
-<div id="authPage">
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="google" content="notranslate">
+  <meta name="theme-color" content="#030917">
+  <title>AIVI AI — Sign Up &amp; Log In</title>
+  <link rel="icon" type="image/png" href="assets/aivi-logo.png">
+  <link href="wave-background.css" rel="stylesheet">
   <style>
     #authPage,
-    #authPage *{
-      box-sizing:border-box;
+    #authPage * {
+      box-sizing: border-box;
     }
 
-    #authPage{
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      
-      min-height:100vh;
-      width:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
+    #authPage {
+      position: relative;
+      z-index: 1;
+      min-height: 100dvh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
     }
 
-    #authPage .auth-card{
-      background-color: #11151c; /* Very dark slate/blue background */
-      box-shadow: 0 0 15px 3px rgba(30, 161, 246, 0.4); /* Neon blue outer glow */
-      width:100%;
-      max-width:400px;
-      border-radius:12px;
-      border: 1px solid #1c7bb5;
-      box-shadow:0 2px 12px rgba(0,0,0,.08);
-      padding:32px;
+    #authPage .auth-card {
+      background: rgba(9, 21, 40, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      width: 100%;
+      max-width: 410px;
+      border-radius: 20px;
+      border: 1px solid rgba(37, 184, 255, 0.45);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), 0 0 28px rgba(0, 150, 255, 0.16);
+      padding: 30px 26px;
+      color: #f0f7ff;
     }
 
-    #authPage h1.auth-title{
-      font-size:20px;
-      margin:0 0 4px;
+    #authPage .auth-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 22px;
     }
 
-    #authPage p.auth-sub{
-      font-size:13px;
-      color:#777;
-      margin:0 0 24px;
+    #authPage .auth-brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 15px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(37, 184, 255, 0.55);
+      box-shadow: 0 0 20px rgba(37, 184, 255, 0.32);
     }
 
-    #authPage .auth-tabs{
-      display:flex;
-      background:#eef0f3;
-      border-radius:8px;
-      padding:4px;
-      margin-bottom:24px;
+    #authPage h1.auth-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 4px;
     }
 
-    #authPage .auth-tabs button{
-      flex:1;
-      border:0;
-      background:transparent;
-      padding:9px;
-      border-radius:6px;
-      font-size:14px;
-      font-weight:600;
-      color:#666;
-      cursor:pointer;
+    #authPage p.auth-sub {
+      font-size: 13px;
+      color: #9bb3cf;
+      margin: 0;
     }
 
-    #authPage .auth-tabs button.auth-active{
-      background:#666;
-      color:white;
-      box-shadow:0 1px 3px rgba(0,0,0,.1);
+    #authPage .auth-tabs {
+      display: flex;
+      gap: 6px;
+      background: rgba(3, 10, 22, 0.72);
+      border: 1px solid rgba(37, 184, 255, 0.24);
+      border-radius: 12px;
+      padding: 5px;
+      margin-bottom: 22px;
     }
 
-    #authPage form.auth-form{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+    #authPage .auth-tabs button {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      padding: 10px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #8fa6c2;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    #authPage .auth-form label{
-      font-size:13px;
-      font-weight:600;
-      color:white;
+    #authPage .auth-tabs button.auth-active {
+      background: linear-gradient(135deg, #25b8ff 0%, #1685ff 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(22, 133, 255, 0.35);
     }
 
-    #authPage .auth-form input{
-      width:100%;
-      border:1px solid #d9dce1;
-      border-radius:8px;
-      padding:11px 13px;
-      font-size:14px;
-      outline:none;
+    #authPage form.auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
-    #authPage .auth-form input:focus{
-      border-color:#2563eb;
-      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    #authPage .auth-form label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #dcebff;
     }
 
-    #authPage .auth-field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
+    #authPage .auth-form input {
+      width: 100%;
+      background: rgba(3, 10, 22, 0.78);
+      color: #ffffff;
+      border: 1px solid rgba(37, 184, 255, 0.30);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    #authPage .auth-captcha{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      background:#f7f8fa;
-      border:1px solid #d9dce1;
-      border-radius:8px;
-      padding:11px 13px;
+    #authPage .auth-form input::placeholder {
+      color: #6e88a6;
     }
 
-    #authPage .auth-captcha .auth-code{
-      font-family:monospace;
-      font-size:18px;
-      font-weight:700;
-      letter-spacing:3px;
-      color:#333;
-      background:#eef0f3;
-      padding:6px 12px;
-      border-radius:6px;
-      user-select:none;
+    #authPage .auth-form input:focus {
+      border-color: #25b8ff;
+      box-shadow: 0 0 0 3px rgba(37, 184, 255, 0.16);
     }
 
-    #authPage .auth-captcha input{
-      flex:1;
-      border:1px solid #d9dce1;
-      background:#fff;
-      min-width:0;
+    #authPage .auth-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
-    #authPage .auth-captcha .auth-refresh{
-      border:0;
-      background:transparent;
-      cursor:pointer;
-      font-size:18px;
-      color:#666;
-      padding:0;
-      flex:none;
+    #authPage .auth-captcha {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(3, 10, 22, 0.65);
+      border: 1px solid rgba(37, 184, 255, 0.26);
+      border-radius: 10px;
+      padding: 8px 10px;
     }
 
-    #authPage .auth-captcha .auth-refresh:hover{
-      color:#2563eb;
+    #authPage .auth-captcha .auth-code {
+      font-family: monospace;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: #00e676;
+      background: rgba(0, 230, 118, 0.10);
+      border: 1px solid rgba(0, 230, 118, 0.32);
+      padding: 7px 11px;
+      border-radius: 8px;
+      user-select: none;
+      flex-shrink: 0;
     }
 
-    #authPage .auth-btn{
-      background:#2563eb;
-      color:#fff;
-      border:0;
-      border-radius:8px;
-      padding:12px;
-      font-size:15px;
-      font-weight:600;
-      cursor:pointer;
+    #authPage .auth-captcha input {
+      flex: 1;
+      min-width: 0;
+      padding: 9px 11px;
     }
 
-    #authPage .auth-btn:hover{
-      background:#1d4ed8;
+    #authPage .auth-captcha .auth-refresh {
+      border: 1px solid rgba(37, 184, 255, 0.28);
+      background: rgba(37, 184, 255, 0.10);
+      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      font-size: 17px;
+      color: #25b8ff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      transition: background 0.2s ease;
     }
 
-    #authPage .auth-forgot{
-      font-size:12.5px;
-      color:#2563eb;
-      text-align:right;
-      text-decoration:none;
-      margin-top:-6px;
+    #authPage .auth-captcha .auth-refresh:hover {
+      background: rgba(37, 184, 255, 0.22);
     }
 
-    #authPage .auth-msg{
-      font-size:13px;
-      font-weight:600;
-      text-align:center;
+    #authPage .auth-btn {
+      background: linear-gradient(90deg, #25b8ff 0%, #1685ff 100%);
+      color: #ffffff;
+      border: 0;
+      border-radius: 11px;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(22, 133, 255, 0.35);
+      transition: transform 0.18s ease, filter 0.18s ease;
+      margin-top: 4px;
     }
 
-    #authPage .auth-msg.auth-ok{
-      color:#16a34a;
+    #authPage .auth-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
     }
 
-    #authPage .auth-msg.auth-err{
-      color:#dc2626;
+    #authPage .auth-forgot {
+      font-size: 12.5px;
+      color: #25b8ff;
+      text-align: right;
+      text-decoration: none;
+      margin-top: -4px;
     }
 
-    #authPage .auth-switch{
-      font-size:13px;
-      color:#666;
-      text-align:center;
-      margin-top:4px;
+    #authPage .auth-forgot:hover {
+      text-decoration: underline;
     }
 
-    #authPage .auth-switch a{
-      color:#2563eb;
-      text-decoration:none;
-      font-weight:600;
-      cursor:pointer;
+    #authPage .auth-msg {
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      min-height: 18px;
     }
 
-    #authPage .auth-hidden{
-      display:none !important;
+    #authPage .auth-msg.auth-ok {
+      color: #00e676;
+    }
+
+    #authPage .auth-msg.auth-err {
+      color: #ff6b6b;
+    }
+
+    #authPage .auth-switch {
+      font-size: 13px;
+      color: #9bb3cf;
+      text-align: center;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(37, 184, 255, 0.16);
+    }
+
+    #authPage .auth-switch a {
+      color: #25b8ff;
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #authPage .auth-hidden {
+      display: none !important;
     }
   </style>
+</head>
+<body>
+  <noscript><strong>Please enable JavaScript to continue.</strong></noscript>
+  <div class="waves"></div>
 
-  <div class="auth-card">
-    <h1 class="auth-title">Welcome</h1>
-    <p class="auth-sub">Create an account or sign in.</p>
-
-    <div class="auth-tabs">
-      <button id="authTabSignup" class="auth-active" type="button">Sign Up</button>
-      <button id="authTabLogin" type="button">Log In</button>
-    </div>
-
-    <!-- SIGNUP -->
-    <form id="authSignupForm" class="auth-form">
-      <div class="auth-field">
-        <label for="authSName">Phone Number</label>
-        <input type="text" id="authSName" placeholder="Your phone number is required" required>
+  <div id="authPage">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <img src="assets/aivi-logo.png" alt="AIVI AI Logo">
+        <h1 class="auth-title">Welcome to AIVI AI</h1>
+        <p class="auth-sub">Create an investment account or sign in to continue.</p>
       </div>
 
-      <div class="auth-field">
-        <label for="authSpass">Password</label>
-        <input type="password" id="authSpass" placeholder="Type in your password" required>
+      <div class="auth-tabs">
+        <button id="authTabSignup" class="auth-active" type="button">Sign Up</button>
+        <button id="authTabLogin" type="button">Log In</button>
       </div>
 
-      <div class="auth-field">
-        <label for="authSPass">Retype Password</label>
-        <input type="password" id="authSPass" placeholder="Confirm your password" required>
-      </div>
-
-      <div class="auth-field">
-        <label for="authSCaptcha">Verify you are not a robot</label>
-        <div class="auth-captcha">
-          <span class="auth-code" id="authSCode"></span>
-          <input type="text" id="authSCaptcha" placeholder="Type the code" required>
-          <button type="button" class="auth-refresh" title="New code" onclick="authNewCode('authSCode')">↻</button>
+      <!-- SIGNUP -->
+      <form id="authSignupForm" class="auth-form">
+        <div class="auth-field">
+          <label for="authSName">Phone Number</label>
+          <input type="text" id="authSName" placeholder="Enter your phone number (e.g. 0771...)" required>
         </div>
+
+        <div class="auth-field">
+          <label for="authSpass">Password</label>
+          <input type="password" id="authSpass" placeholder="Create a strong password" required>
+        </div>
+
+        <div class="auth-field">
+          <label for="authSPass">Confirm Password</label>
+          <input type="password" id="authSPass" placeholder="Retype your password" required>
+        </div>
+
+        <div class="auth-field">
+          <label for="authSCaptcha">Security Verification</label>
+          <div class="auth-captcha">
+            <span class="auth-code" id="authSCode"></span>
+            <input type="text" id="authSCaptcha" placeholder="Enter code" required>
+            <button type="button" class="auth-refresh" title="New code" onclick="authNewCode('authSCode')">↻</button>
+          </div>
+        </div>
+
+        <button class="auth-btn" type="submit">Create Account</button>
+        <div class="auth-msg" id="authSMsg"></div>
+      </form>
+
+      <!-- LOGIN -->
+      <form id="authLoginForm" class="auth-form auth-hidden">
+        <div class="auth-field">
+          <label for="authLEmail">Phone Number</label>
+          <input type="text" id="authLEmail" placeholder="Enter your phone number" required>
+        </div>
+
+        <div class="auth-field">
+          <label for="authLPass">Password</label>
+          <input type="password" id="authLPass" placeholder="Enter your password" required>
+        </div>
+
+        <div class="auth-field">
+          <label for="authLCaptcha">Security Verification</label>
+          <div class="auth-captcha">
+            <span class="auth-code" id="authLCode"></span>
+            <input type="text" id="authLCaptcha" placeholder="Enter code" required>
+            <button type="button" class="auth-refresh" title="New code" onclick="authNewCode('authLCode')">↻</button>
+          </div>
+        </div>
+
+        <button class="auth-btn" type="submit">Log In</button>
+
+        <a class="auth-forgot" href="mailto:investinginai.online@gmail.com?subject=Password%20Reset%20Assistance">
+          Forgot password?
+        </a>
+
+        <div class="auth-msg" id="authLMsg"></div>
+      </form>
+
+      <div class="auth-switch" id="authSwitchText">
+        Already have an account? <a id="authToLogin">Log in</a>
       </div>
-
-      <button class="auth-btn" type="submit">Sign Up</button>
-      <div class="auth-msg" id="authSMsg"></div>
-    </form>
-
-    <!-- LOGIN -->
-<!-- LOGIN -->
-<form id="authLoginForm" class="auth-form auth-hidden">
-
-  <div class="auth-field">
-    <label for="authLEmail">Phone Number</label>
-    <input
-      type="text"
-      id="authLEmail"
-      placeholder="Your phone number"
-      required
-    >
-  </div>
-
-  <div class="auth-field">
-    <label for="authLPass">Password</label>
-    <input
-      type="password"
-      id="authLPass"
-      placeholder="Your password"
-      required
-    >
-  </div>
-
-  <div class="auth-field">
-    <label for="authLCaptcha">Verify you are not a robot</label>
-
-    <div class="auth-captcha">
-      <span class="auth-code" id="authLCode"></span>
-
-      <input
-        type="text"
-        id="authLCaptcha"
-        placeholder="Type the code"
-        required
-      >
-
-      <button
-        type="button"
-        class="auth-refresh"
-        title="New code"
-        onclick="authNewCode('authLCode')"
-      >↻</button>
     </div>
   </div>
 
-  <button class="auth-btn" type="submit">
-    Log In
-  </button>
-
-  <a class="auth-forgot" href="#">
-    Forgot password?
-  </a>
-
-  <div class="auth-msg" id="authLMsg"></div>
-
-</form>
-
-    <div class="auth-switch" id="authSwitchText">
-      Already have an account? <a id="authToLogin">Log in</a>
-    </div>
-  </div>
-</div>
-  
-  
-
-
-
-
-
-
-<script type="module" src="authication.js"></script>
-
-  <script src="wave-background.js"></scrip>
-  
+  <script type="module" src="authication.js"></script>
+  <script src="wave-background.js"></script>
 </body>
 </html>

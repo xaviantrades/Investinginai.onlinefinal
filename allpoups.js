@@ -1,75 +1,29 @@
-.allpopup-overlay {
-    position: fixed;
-    inset: 0;
+(function initAllPopups() {
+  function bindPopupClose() {
+    const overlay = document.getElementById("allpopupOverlay");
+    if (!overlay || overlay.dataset.bound === "true") return;
+    overlay.dataset.bound = "true";
 
-    display: none;
-    align-items: center;
-    justify-content: center;
+    overlay.addEventListener("click", function (event) {
+      if (event.target === overlay || event.target.closest(".allpopup-close")) {
+        overlay.style.display = "none";
+      }
+    });
+  }
 
-    background: rgba(0, 0, 0, 0.65);
+  if (typeof window.showPopup !== "function") {
+    window.showPopup = function (text) {
+      const popupText = document.getElementById("allpopupText");
+      const overlay = document.getElementById("allpopupOverlay");
+      if (!popupText || !overlay) return;
+      popupText.textContent = text;
+      overlay.style.display = "flex";
+    };
+  }
 
-    z-index: 99999;
-    padding: 20px;
-}
-
-.allpopup-alert {
-    width: 100%;
-    max-width: 330px;
-
-    background: #000;
-    color: #fff;
-
-    border: 1px solid #008cff;
-    border-radius: 15px;
-
-    padding: 22px;
-
-    text-align: center;
-
-    box-shadow: 0 0 20px rgba(0, 140, 255, 0.4);
-
-    animation: popupShow 0.25s ease;
-}
-
-.allpopup-text {
-    font-size: 16px;
-    line-height: 1.5;
-    font-style: italic;
-
-    margin-bottom: 18px;
-
-    color: #fff;
-}
-
-.allpopup-close {
-    border: none;
-    outline: none;
-
-    background: #008cff;
-    color: #fff;
-
-    padding: 9px 28px;
-
-    border-radius: 8px;
-
-    font-size: 14px;
-    font-weight: 600;
-
-    cursor: pointer;
-}
-
-.allpopup-close:active {
-    transform: scale(0.96);
-}
-
-@keyframes popupShow {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindPopupClose);
+  } else {
+    bindPopupClose();
+  }
+})();

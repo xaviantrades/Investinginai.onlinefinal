@@ -1,144 +1,228 @@
+/* ==========================================================
+   AI MODELS & POPUP STYLES — Harmonized with Waveform Theme
+========================================================== */
 
-body {
-    margin: 0;
-    min-height: 100vh;
-    
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    background:
-      radial-gradient(circle at 20% 10%, rgba(37,184,255,0.25), transparent 40%),
-      radial-gradient(circle at 80% 60%, rgba(255,80,160,0.18), transparent 45%),
-      #05070a;
-    background-attachment: fixed;
-    color: #cfe9ff;
-}
 /* ============================================
-   WITHDRAW CARD — stackable, clickable listing
-   ============================================ */
+   AI PRODUCTS HEADER
+============================================ */
+.ai-products-header {
+  position: relative;
+  width: 100%;
+  padding: 18px;
+  margin-bottom: 18px;
+  background: var(--surface, rgba(9, 21, 40, 0.78));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-glow, rgba(37, 184, 255, 0.45));
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 22px rgba(0, 150, 255, 0.12);
+  overflow: hidden;
+}
 
-/* Wrap your JS-generated cards in this so they
-   stack with breathing room and hover lift isn't
-   clipped between neighbors. */
-.withdraw-list {
+.ai-products-header::before {
+  content: "";
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  top: -70px;
+  right: -50px;
+  background: rgba(37, 184, 255, 0.20);
+  border-radius: 50%;
+  filter: blur(32px);
+  pointer-events: none;
+}
+
+.ai-header-banner {
+  width: 100%;
+  height: 135px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 1px solid rgba(37, 184, 255, 0.3);
+}
+
+.ai-header-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ai-header-label {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(37, 184, 255, 0.12);
+  border: 1px solid rgba(37, 184, 255, 0.32);
+  color: #25b8ff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.ai-header-content h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.ai-header-content p {
+  margin: 6px 0 16px;
+  color: #9bb3cf;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.vip-ai-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(0, 140, 255, 0.10);
+  border: 1px solid rgba(37, 184, 255, 0.35);
+  border-radius: 12px;
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.vip-ai-link:hover {
+  background: rgba(0, 140, 255, 0.18);
+  border-color: #25b8ff;
+  transform: translateY(-1px);
+}
+
+.vip-ai-link > .fa-crown {
+  color: #ffd54a;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.vip-ai-link span {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  padding: 4px 0;
+  gap: 2px;
+}
+
+.vip-ai-link strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: #00e676;
+}
+
+.vip-ai-link small {
+  color: #9bb3cf;
+  font-size: 11.5px;
+}
+
+.vip-ai-link > .fa-chevron-right {
+  color: #25b8ff;
+  font-size: 13px;
+}
+
+/* ============================================
+   AI MODEL CARDS LISTING
+============================================ */
+#withdraw-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.withdraw-empty {
+  text-align: center;
+  padding: 28px 18px;
+  background: rgba(9, 21, 40, 0.72);
+  border: 1px solid rgba(37, 184, 255, 0.25);
+  border-radius: 14px;
+  color: #9bb3cf;
+  font-size: 14px;
 }
 
 .withdraw-card {
   position: relative;
   width: 100%;
-  max-width: 700px;
-  min-height: 155px;      /* was fixed height:155px — min-height lets it
-                              grow instead of clipping longer content */
-  margin: 0 auto;
+  min-height: 150px;
   display: flex;
+  align-items: stretch;
   overflow: hidden;
-  box-sizing: border-box;
-
-  /* transparent background */
-  background: transparent;
-  border: 1px solid #087bc2;
-  border-radius: 10px;
-
-  box-shadow:
-    0 0 5px rgba(0, 136, 255, 0.8),
-    0 0 15px rgba(0, 136, 255, 0.35);
-
-  color: white;
+  background: rgba(9, 21, 40, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(37, 184, 255, 0.42);
+  border-radius: 14px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.42), 0 0 18px rgba(0, 140, 255, 0.14);
+  color: #ffffff;
   cursor: pointer;
-  z-index: 1;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* If fully transparent reads too washed-out against your page background,
-   swap the line above for a frosted-glass tint instead:
-   background: rgba(2, 6, 10, 0.35);
-   backdrop-filter: blur(10px);
-   -webkit-backdrop-filter: blur(10px);
-*/
-
 .withdraw-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   border-color: #25b8ff;
-  box-shadow:
-    0 0 8px rgba(0, 136, 255, 0.9),
-    0 0 24px rgba(0, 136, 255, 0.45);
-  z-index: 5;             /* pops above stacked neighbors on hover */
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 24px rgba(37, 184, 255, 0.28);
 }
 
 .withdraw-card:active {
-  transform: translateY(-1px) scale(0.996);
+  transform: scale(0.992);
 }
 
-.withdraw-card:focus-visible {
-  outline: 2px solid #25b8ff;
-  outline-offset: 3px;
-}
-
-/* --- click indicator badge, top-right corner --- */
 .withdraw-card::after {
   content: "";
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background-color: rgba(37, 184, 255, 0.15);
-  border: 1px solid rgba(37, 184, 255, 0.7);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2325b8ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z'/></svg>");
+  border: 1px solid rgba(37, 184, 255, 0.65);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2325b8ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12h14M12 5l7 7-7 7'/></svg>");
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 11px 11px;
-  animation: withdraw-pulse 2.2s ease-in-out infinite;
+  background-size: 13px 13px;
   pointer-events: none;
 }
 
-@keyframes withdraw-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 184, 255, 0.45); }
-  50%      { box-shadow: 0 0 0 5px rgba(37, 184, 255, 0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .withdraw-card,
-  .withdraw-card::after {
-    animation: none;
-    transition: none;
-  }
-}
-
 .withdraw-image {
-        width: 42%;
-        height: 100%;
-        background: #161616;
-        flex-shrink: 0;
-    }
+  width: 38%;
+  min-height: 150px;
+  background: #071428;
+  flex-shrink: 0;
+  overflow: hidden;
+}
 
-    .withdraw-image img {
-        width: 100%;
-        height: 100%;
-        display: block;
-        object-fit: cover;
-    }
+.withdraw-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
 
 .withdraw-info {
-  width: 58%;
-  padding: 10px 34px 10px 11px; /* right padding clears the click badge */
+  width: 62%;
+  padding: 12px 36px 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   overflow: hidden;
-  box-sizing: border-box;
 }
 
 .withdraw-title {
   order: 1;
-  margin: 0 0 3px;
+  margin: 0 0 2px;
   color: #25b8ff;
-  font-size: 21px;
-  line-height: 1.05;
-  font-weight: bold;
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -147,605 +231,297 @@ body {
 .withdraw-line {
   order: 2;
   margin: 0;
-  font-size: 18px;
-  line-height: 1.1;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: #e6f2ff;
+  font-weight: 600;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Description now sits pinned to the bottom of the card,
-   below the stat lines — no JS/markup changes needed,
-   flex "order" handles the reflow regardless of append order. */
 .withdraw-descrip {
   order: 3;
-  margin-top: auto;
+  margin: auto 0 0;
   padding-top: 6px;
-  border-top: 1px solid rgba(37, 184, 255, 0.2);
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
-  font-style: italic;
-  line-height: 1.3;
-  white-space: normal;
+  border-top: 1px solid rgba(37, 184, 255, 0.18);
+  color: #8fa6c2;
+  font-size: 11.5px;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-@media (max-width: 480px) {
-  .withdraw-card {
-    min-height: 135px;
-    border-radius: 9px;
-  }
-
-  .withdraw-info {
-    padding: 8px 28px 8px 9px;
-  }
-
-  .withdraw-title {
-    font-size: 17px;
-  }
-
-  .withdraw-line {
-    font-size: 15px;
-  }
-
-  .withdraw-descrip {
-    font-size: 11px;
-  }
-
-  .withdraw-card {
-  /* ...existing styles... */
-  margin-bottom: 14px;
-}
-
-.withdraw-card:last-child {
-  margin-bottom: 0;
-}
-
-  .withdraw-card::after {
-    width: 18px;
-    height: 18px;
-    top: 8px;
-    right: 8px;
-    background-size: 9px 9px;
-  }
-}
-
-    
-/* =========================
-       POP CLICK FULL SCREEN
-    ========================== */
-    
-/* =========================
-   PREMIUM POPUP FULL SCREEN
-========================== */
+/* ============================================
+   AI BUY MODAL OVERLAY
+============================================ */
 .ai-overlay {
-    position: fixed;
-    inset: 0;
-    /* Richer dark background with a glass blur effect */
-    background: rgba(4, 9, 20, 0.85);
-    backdrop-filter: blur(8px); 
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    padding: 20px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    font-family: system-ui, -apple-system, sans-serif;
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 20, 0.84);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 18px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
-/* Active state for smooth fade in */
 .ai-overlay.active {
-    display: flex;
-    opacity: 1;
+  display: flex;
+  opacity: 1;
 }
 
-/* Main deposit container */
 .ai-page {
-    width: 100%;
-    max-width: 360px;
-    /* Subtle gradient for depth */
-    background: linear-gradient(145deg, #0d1b2c 0%, #08101a 100%);
-    /* Thinner, cleaner border with a top highlight */
-    border: 1px solid rgba(22, 133, 255, 0.2);
-    border-top: 1px solid rgba(22, 133, 255, 0.6);
-    border-radius: 20px;
-    padding: 30px 25px;
-    text-align: center;
-    /* Sleeker, wider glow */
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(22, 133, 255, 0.15);
-    /* Entry animation setup */
-    transform: scale(0.95) translateY(15px);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  width: 100%;
+  max-width: 390px;
+  background: linear-gradient(155deg, rgba(11, 26, 48, 0.97) 0%, rgba(5, 13, 26, 0.99) 100%);
+  border: 1px solid rgba(37, 184, 255, 0.45);
+  border-radius: 20px;
+  padding: 20px 22px 24px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 28px rgba(22, 133, 255, 0.20);
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.3s ease;
 }
 
-/* Scales up playfully when active */
 .ai-overlay.active .ai-page {
-    transform: scale(1) translateY(0);
+  transform: scale(1) translateY(0);
 }
-
-/* Modal Title */
-#withdraw-title {
-    font-family: 'Montserrat', sans-serif;
-    margin: 0 0 10px 0;
-    font-size: 19px;
-    font-weight: 600;
-    color: #ffffff;
-    /* Glowing text effect */
-    text-shadow: 0 0 10px rgba(22, 133, 255, 0.4); 
-    
-}
-
-/* Base text styling for the stats */
-#overlay-content div p {
-    margin: 12px 0;
-    color: #94a3b8; /* Soft slate gray for readability */
-    font-size: 0.95rem;
-}
-
-/* Make labels pop if you use <strong> tags inside the <p> */
-#overlay-content div p strong {
-    color: #ffffff;
-    font-weight: 600;
-}
-
-/* Highlighting the Total Income in a "Money Fashion" for Dark Mode */
-#withdraw-total-income {
-    color: #10b981; /* Bright emerald green */
-    background: rgba(16, 185, 129, 0.1); /* Transparent green box */
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    font-size: 1.15rem !important;
-    font-weight: 700;
-    padding: 14px;
-    border-radius: 12px;
-    text-align: center;
-    margin: 20px 0 !important;
-    box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.05);
-}
-
-/* Scheme Description */
-#description {
-    font-size: 0.85rem !important;
-    color: #64748b !important;
-    line-height: 1.6;
-    /* Center text looks cleaner than justified on mobile */
-    text-align: center; 
-    /* Put the description in its own darkened box */
-    background: rgba(0, 0, 0, 0.25);
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 25px !important;
-}
-
-/* Call to Action Button */
-#place-aibuy {
-    width: 100%;
-    border: none;
-    padding: 16px;
-    border-radius: 12px;
-    /* Gradient blue button */
-    background: linear-gradient(90deg, #1685ff 0%, #0056cc 100%);
-    color: white;
-    font-weight: 800;
-    font-size: 16px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(22, 133, 255, 0.3);
-    transition: all 0.2s ease;
-}
-
-/* Button Hover State */
-#place-aibuy:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 22px rgba(22, 133, 255, 0.5);
-    background: linear-gradient(90deg, #1a8bff 0%, #0060e6 100%);
-}
-
-/* Button Click/Active State */
-#place-aibuy:active {
-    transform: scale(0.96) translateY(0);
-    box-shadow: 0 2px 10px rgba(22, 133, 255, 0.4);
-}
-
-
-
-
-
-
 
 .ai-header {
-        height: 54px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 10px;
+}
 
-        display: flex;
-        align-items: center;
-        justify-content: center;
+.ai-header .back-btn {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(37, 184, 255, 0.12);
+  border: 1px solid rgba(37, 184, 255, 0.35);
+  cursor: pointer;
+}
 
-        position: relative;
-    }
+.ai-header .back-btn::before {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(45deg);
+  left: 13px;
+  top: 11px;
+}
 
-    .ai-title {
-        font-size: 20px;
-        font-weight: bold;
-        color: #fff;
-    }
+.ai-modal-preview {
+  width: 100%;
+  height: 130px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 1px solid rgba(37, 184, 255, 0.3);
+  background: #071428;
+}
 
-    .back-btn {
-        position: absolute;
-        left: 2px;
-        top: 13px;
+.ai-modal-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-        width: 25px;
-        height: 25px;
+#withdraw-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  padding: 0 40px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-        background: transparent;
-        border: none;
+#overlay-content div p {
+  margin: 10px 0;
+  color: #b4cae3;
+  font-size: 14px;
+}
 
-        cursor: pointer;
-    }
+#overlay-content div p strong {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 15px;
+}
 
-    .back-btn::before {
-        content: "";
-        position: absolute;
+#withdraw-total-income {
+  display: block !important;
+  color: #00e676 !important;
+  background: rgba(0, 230, 118, 0.10);
+  border: 1px solid rgba(0, 230, 118, 0.35);
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  padding: 12px 14px !important;
+  border-radius: 12px;
+  text-align: center;
+  margin: 14px 0 !important;
+  letter-spacing: 0.5px !important;
+}
 
-        width: 13px;
-        height: 13px;
+#description {
+  font-size: 12.5px !important;
+  color: #8fa6c2 !important;
+  line-height: 1.55;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 18px !important;
+}
 
-        border-left: 2px solid white;
-        border-bottom: 2px solid white;
+#place-aibuy {
+  width: 100%;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #25b8ff 0%, #1685ff 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(22, 133, 255, 0.35);
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
 
-        transform: rotate(45deg);
+#place-aibuy:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
 
-        left: 5px;
-        top: 5px;
-    }
+#place-aibuy:active {
+  transform: scale(0.98);
+}
 
-
-
-
-
-
-/* ===============================
-   POPUP OVERLAY
-================================ */
+/* ============================================
+   LANDING MESSAGE FULLSCREEN POPUP
+============================================ */
 .popup-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.88);
-
-    display: none;
-    align-items: center;
-    justify-content: center;
-
-    z-index: 9999;
-    padding: 15px;
-
-    box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 20, 0.84);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
 }
 
-
-/* ===============================
-   POPUP CARD
-================================ */
 .popup-content {
-    width: 100%;
-    max-width: 380px;
-
-    background: #000;
-    border: 1px solid #008cff;
-    border-radius: 18px;
-
-    overflow: hidden;
-
-    position: relative;
-
-    box-shadow:
-        0 0 20px rgba(0, 140, 255, 0.35),
-        0 0 50px rgba(0, 140, 255, 0.12);
-
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-    box-sizing: border-box;
+  width: 100%;
+  max-width: 440px;
+  background: linear-gradient(160deg, rgba(10, 24, 46, 0.98), rgba(4, 11, 24, 0.99));
+  border: 1px solid rgba(37, 184, 255, 0.55);
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 26px rgba(0, 140, 255, 0.22);
+  animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-
-/* ===============================
-   BLUE HEADER
-================================ */
 #popup-title {
-    margin: 0;
-
-    padding: 15px 45px 15px 20px;
-
-    background: #008cff;
-
-    color: #fff;
-
-    font-size: 18px;
-    font-weight: 700;
-
-    text-align: center;
-
-    letter-spacing: 0.5px;
-
-    box-sizing: border-box;
+  margin: 0;
+  padding: 15px 46px 15px 20px;
+  background: linear-gradient(90deg, #1685ff, #0d5ec9);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: left;
+  letter-spacing: 0.3px;
 }
 
-
-/* ===============================
-   POPUP MESSAGE
-================================ */
 .popup-textarea {
-    display: block;
-
-    width: 100%;
-
-    min-height: 180px;
-    max-height: 70vh;
-
-    padding: 20px;
-
-    box-sizing: border-box;
-
-    border: none;
-    outline: none;
-
-    background: #000;
-
-    color: #fff;
-
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    font-style: italic;
-    line-height: 1.7;
-
-    text-align: left;
-
-    resize: none;
-
-    overflow: hidden;
-
-    white-space: pre-wrap;
-
-    word-wrap: break-word;
+  display: block;
+  width: 100%;
+  min-height: 160px;
+  max-height: 68vh;
+  padding: 20px;
+  color: #e2eeff;
+  font-size: 14.5px;
+  line-height: 1.65;
+  text-align: left;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-
-/* ===============================
-   CLOSE BUTTON
-================================ */
 .close-btn {
-    position: absolute;
-
-    top: 11px;
-    right: 15px;
-
-    width: 32px;
-    height: 32px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #fff;
-
-    font-size: 25px;
-    font-weight: 300;
-
-    cursor: pointer;
-
-    line-height: 1;
-
-    border-radius: 50%;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease;
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  border-radius: 50%;
+  transition: background 0.2s ease;
 }
 
 .close-btn:hover {
-    background: rgba(255,255,255,0.15);
-    color: #fff;
+  background: rgba(255, 255, 255, 0.28);
 }
 
-
-/* ===============================
-   POPUP ANIMATION
-================================ */
-@keyframes popIn {
-    from {
-        transform: scale(0.88);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-
-/* ===============================
-   MOBILE ADJUSTMENT
-================================ */
-@media (max-width: 400px) {
-
-    .popup-overlay {
-        padding: 12px;
-    }
-
-    .popup-content {
-        max-width: 100%;
-        border-radius: 16px;
-    }
-
-    #popup-title {
-        font-size: 17px;
-        padding: 14px 45px 14px 18px;
-    }
-
-/* Bottom double chevron styling */
 .chevron-icon {
-  margin-top: 10px;
+  margin-top: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-
-
-  .ai-products-header {
-    position: relative;
-
-    width: 100%;
-    box-sizing: border-box;
-
-    padding: 20px;
-
-    border-radius: 20px
-
-    overflow: hidden;
+@keyframes popIn {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
+@media (max-width: 440px) {
+  .withdraw-card {
+    min-height: 138px;
+  }
 
-/* Decorative glow */
-.ai-products-header::before {
-    content: "";
+  .withdraw-title {
+    font-size: 15.5px;
+  }
 
-    position: absolute;
-
-    width: 130px;
-    height: 130px;
-
-    top: -70px;
-    right: -50px;
-
-    background: rgba(0, 140, 255, 0.18);
-
-    border-radius: 50%;
-
-    filter: blur(30px);
-
-    pointer-events: none;
-}
-
-
-
-
-/* Small label */
-.ai-header-label {
-    display: block;
-
-    margin-bottom: 4px;
-
-    color: #008cff;
-
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 1.5px;
-}
-
-
-/* Main title */
-.ai-header-content h2 {
-    margin: 0;
-
-    color: #fff;
-
-    font-size: 24px;
-    font-weight: 750;
-
-    line-height: 1.2;
-}
-
-
-/* Description */
-.ai-header-content p {
-    margin: 9px 0 18px;
-
-    max-width: 330px;
-
-    color: #aeb8c4;
-
-    font-size: 13px;
-    line-height: 1.55;
-}
-
-
-/* VIP link */
-.vip-ai-link {
-    position: relative;
-
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    width: 100%;
-
-    padding: 12px 13px;
-
-    box-sizing: border-box;
-
-    background: rgba(0, 140, 255, 0.08);
-
-    border: 1px solid rgba(0, 140, 255, 0.3);
-
-    border-radius: 12px;
-
-    color: #fff;
-
-    text-decoration: none;
-
-    transition: 0.2s ease;
-}
-
-
-.vip-ai-link:hover {
-    background: rgba(0, 140, 255, 0.15);
-
-    border-color: #008cff;
-
-    transform: translateY(-1px);
-}
-
-
-/* Crown */
-.vip-ai-link > .fa-crown {
-    color: #ffd54a;
-
-    font-size: 17px;
-}
-
-
-/* VIP text */
-.vip-ai-link span {
-    flex: 1;
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-
-.vip-ai-link strong {
-    font-size: 13px;
-    font-weight: 700;
-}
-
-
-.vip-ai-link small {
-    color: #8e9aa8;
-
-    font-size: 10px;
-}
-
-
-/* Arrow */
-.vip-ai-link > .fa-chevron-right {
-    color: #008cff;
-
-    font-size: 11px;
+  .withdraw-line {
+    font-size: 12.5px;
+  }
 }

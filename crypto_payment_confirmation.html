@@ -1,166 +1,216 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Confirm Crypto Deposit</title>
-<link href="payment.css" rel="stylesheet">
-  
-
-<script src="firestore-cryp.js">
-    
-</script>
-
-  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#030917">
+  <title>Confirm Crypto Deposit — AIVI AI</title>
+  <link rel="icon" type="image/png" href="assets/aivi-logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="wave-background.css">
+  <link rel="stylesheet" href="payment.css">
+  <script src="firestore-cryp.js"></script>
 </head>
 <body>
-<div style=" min-height: 100dvh;
-        width: 100%;
-        padding: 0 11px 18px;
-        position: relative;">
-  <!-- HEADER -->
-        <div class="deposit-header">
+  <noscript><strong>Please enable JavaScript to continue.</strong></noscript>
+  <div class="waves"></div>
 
-            <button class="back-btn" onclick="returnHome()"></button>
+  <div class="app-shell">
+    <!-- ========= TOP SUBPAGE BAR ========= -->
+    <div class="subpage-topbar">
+      <a class="subpage-back" href="payment_form_spinner_fixed.html">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back
+      </a>
+      <div class="subpage-topbar-title">Crypto Deposit</div>
+      <img class="subpage-topbar-logo" src="assets/aivi-logo.png" alt="AIVI AI">
+    </div>
 
-            <div class="deposit-title">
-                Deposit
-            </div>
+    <div class="payment-card">
+      <div class="header">
+        <div style="display:flex; justify-content:center; margin-bottom:10px;">
+          <img src="assets/btc.svg" alt="Bitcoin" style="width:44px; height:44px;">
+        </div>
+        <h2>Confirm Crypto Deposit</h2>
+        <p>Scan or copy the official wallet address below, send your transfer, then submit the blockchain TXID for verification.</p>
+      </div>
 
+      <div id="step-2">
+        <div class="section crypto-section">
+          <h3 class="section-title">Step 1 — Send Crypto Transfer</h3>
+          <p class="instruction">
+            Send <strong id="paymentAmount">your selected deposit amount</strong> to the wallet address below using the <strong id="paymentNetwork">BTC (Bitcoin)</strong> network.
+          </p>
+
+          <div class="qr-wrap">
+            <img src="assets/btc-wallet-qr.png" alt="BTC Receiving Wallet QR Code">
+            <span>Scan QR code in your crypto wallet</span>
+          </div>
+
+          <div class="wallet-box">
+            <span class="wallet-label">Receiving BTC Wallet Address</span>
+            <span class="wallet-address" id="walletAddress">bc1q5w9hnd376md03gpzc7sglydjx4cj3zxnzuqtpl</span>
+            <button type="button" onclick="copyWallet()" class="copy-button" id="copyButton">
+              Copy Wallet Address
+            </button>
+          </div>
+
+          <div class="warning">
+            ⚠️ Send only Bitcoin (BTC) via the native BTC network. Sending unsupported tokens or using another network may result in permanent loss of funds.
+          </div>
         </div>
 
+        <div class="button-row">
+          <button type="button" onclick="prevStep()" class="back-button">Back</button>
+          <button type="button" onclick="nextStep()" class="primary-button">I've Sent the Crypto</button>
+        </div>
+      </div>
 
-<div class="payment-card">
-<div class="header">
-<h2>Confirm Crypto Deposit</h2>
-<p>Review your deposit details, send the crypto, then submit the blockchain transaction ID for verification.</p>
-</div>
-  
-<div id="step-2">
-<div class="section crypto-section">
-<h3 class="section-title">2. Make Payment</h3>
-<p class="instruction">Send exactly <strong id="paymentAmount">.......</strong> to the wallet address below using the <strong id="paymentNetwork">BTC</strong> network.</p>
-  
-<div class="wallet-box">
-<span class="wallet-label">Receiving Wallet Address</span>
-<span class="wallet-address" id="walletAddress">bc1q5w9hnd376md03gpzc7sglydjx4cj3zxnzuqtpl</span>
-<button type="button" onclick="copyWallet()" class="copy-button" id="copyButton">Copy Wallet Address</button>
-</div>
-  
-<div class="warning">⚠️ Send only the selected cryptocurrency through the BTC network. Sending through another network may result in loss of funds.</div>
-</div>
-<div class="button-row">
-<button type="button" onclick="prevStep()" class="back-button">Back</button>
-<button type="button" onclick="nextStep()" class="primary-button">I've Sent the Crypto</button>
-</div>
-</div>
+      <div id="step-3" class="step-hidden">
+        <form id="paymentForm">
+          <label for="transaction_id" class="form-label">Step 2 — Enter Transaction Hash (TXID)</label>
+          <p class="help-text">
+            After broadcasting your transfer, copy the blockchain transaction ID (TXID) from your wallet or block explorer and paste it below.
+          </p>
+          <input type="text" id="transaction_id" class="tx-input" placeholder="Paste blockchain TXID / hash" required>
+          <div class="button-row" style="margin-top:20px;">
+            <button type="button" onclick="prevStep()" class="back-button">Back</button>
+            <button type="submit" class="primary-button" id="cryptobtn">Confirm Payment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
-<div id="step-3" class="step-hidden">
-<form id="paymentForm">
-<label for="transaction_id" class="form-label">3. Enter Transaction ID</label>
-<p class="help-text">After sending the crypto, copy the blockchain transaction hash (TXID) from your wallet or block explorer and paste it below.</p>
-<input type="text" id="transaction_id" class="tx-input" placeholder="Paste transaction hash / TXID" required>
-<div class="button-row" style="margin-top:20px">
-<button type="button" onclick="prevStep()" class="back-button">Back</button>
-<button type="submit" class="primary-button" id="cryptobtn">Confirm Payment</button>
-</div>
-</form>
-</div>
-</div>
+  <div id="verificationModal">
+    <div class="modal-box">
+      <div class="loader"></div>
+      <h3 class="modal-title">Verifying Blockchain TXID...</h3>
+      <p class="modal-text">
+        Please wait while we register your blockchain transaction for confirmation. Do not close this page.
+      </p>
+      <div class="tx-display">TXID: <span id="displayTxId"></span></div>
+    </div>
+  </div>
 
-<div id="verificationModal">
-<div class="modal-box">
-<div class="loader"></div>
-<h3 class="modal-title">Verifying Payment...</h3>
-<p class="modal-text">Please wait while we verify your blockchain transaction. Do not close this page while verification is in progress.</p>
-<div class="tx-display">Transaction ID: <span id="displayTxId"></span></div>
-</div>
-</div>
-</div>
+  <!-- ========= BOTTOM NAV ========= -->
+  <nav class="nav">
+    <a href="landing.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <ellipse cx="12" cy="5" rx="8" ry="3"/>
+        <path d="M4 5v4c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/>
+        <path d="M4 9v4c0 1.66 3.58 3 8 3s8-1.34 8-3V9"/>
+        <path d="M4 13v4c0 1.66 3.58 3 8 3s8-1.34 8-3v-4"/>
+      </svg>
+      Home
+    </a>
+    <a href="raffle.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+        <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+        <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+        <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+      </svg>
+      Raffle
+    </a>
+    <a href="chats.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+        <path d="M9 3.5h9a2.5 2.5 0 0 1 2.5 2.5v4.5a2.5 2.5 0 0 1-2.5 2.5h-1v3.2l-3.2-3.2h-1.3"/>
+        <path d="M4.5 8h8A2.5 2.5 0 0 1 15 10.5v4a2.5 2.5 0 0 1-2.5 2.5H8l-4 3.2V17H4.5A2.5 2.5 0 0 1 2 14.5v-4A2.5 2.5 0 0 1 4.5 8z"/>
+      </svg>
+      Chats
+    </a>
+    <a href="ai.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <rect x="6.5" y="6.5" width="11" height="11" rx="2"/>
+        <rect x="10" y="10" width="4" height="4" rx="1"/>
+        <path d="M9.5 6.5V3.5M12 6.5V3.5M14.5 6.5V3.5M9.5 20.5v-3M12 20.5v-3M14.5 20.5v-3"/>
+        <path d="M6.5 9.5h-3M6.5 12h-3M6.5 14.5h-3M20.5 9.5h-3M20.5 12h-3M20.5 14.5h-3"/>
+      </svg>
+      AI
+    </a>
+    <a href="bitcoin-income.html">
+      <svg viewBox="0 0 24 24">
+        <line x1="9" x2="9" y1="4" y2="21" stroke="currentColor" stroke-width="2.2"/>
+        <line x1="13" x2="13" y1="4" y2="21" stroke="currentColor" stroke-width="2.2"/>
+        <text x="11.8" y="18.2" text-anchor="middle" font-size="17" font-weight="800" font-family="Arial,Helvetica,sans-serif" fill="currentColor">B</text>
+      </svg>
+      Income
+    </a>
+    <a href="user-account.html" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="12" cy="7.5" r="4"/>
+        <path d="M4.5 20.5c0-4 3.5-6.7 7.5-6.7s7.5 2.7 7.5 6.7"/>
+      </svg>
+      My
+    </a>
+  </nav>
 
-<script>
-let currentStep = 2; // Initialize directly at step 2
+  <script>
+    let currentStep = 2;
 
-function showStep(step) {
-    // Hide all remaining steps
-    document.getElementById("step-2").classList.add("step-hidden");
-    document.getElementById("step-3").classList.add("step-hidden");
-    
-    // Show the active step
-    document.getElementById("step-" + step).classList.remove("step-hidden");
-}
+    function showStep(step) {
+      document.getElementById("step-2").classList.add("step-hidden");
+      document.getElementById("step-3").classList.add("step-hidden");
+      document.getElementById("step-" + step).classList.remove("step-hidden");
+    }
 
-function nextStep() {
-    if (currentStep < 3) {
+    function nextStep() {
+      if (currentStep < 3) {
         currentStep++;
         showStep(currentStep);
+      }
     }
-}
 
-function prevStep() {
-    // Prevent the user from going back past step 2
-    if (currentStep > 2) {
+    function prevStep() {
+      if (currentStep > 2) {
         currentStep--;
         showStep(currentStep);
+      } else {
+        window.location.href = "payment_form_spinner_fixed.html";
+      }
     }
-}
 
-// Optional: Call this once when the page loads to ensure Step 2 is visible
-// showStep(currentStep);
-  
-function copyWallet(){
-const address=document.getElementById("walletAddress").textContent.trim();
-navigator.clipboard.writeText(address).then(function(){
-const button=document.getElementById("copyButton");
-button.textContent="Copied ✓";
-setTimeout(function(){button.textContent="Copy Wallet Address"},3000);
-}).catch(function(){alert("Please copy the wallet address manually.");});
-}
+    function copyWallet() {
+      const address = document.getElementById("walletAddress").textContent.trim();
+      navigator.clipboard.writeText(address).then(function () {
+        const button = document.getElementById("copyButton");
+        button.textContent = "Copied ✓";
+        setTimeout(function () {
+          button.textContent = "Copy Wallet Address";
+        }, 3000);
+      }).catch(function () {
+        alert("Please copy the wallet address manually.");
+      });
+    }
 
-document.getElementById("paymentForm").addEventListener("submit",function(event){
-event.preventDefault();
-const txId=document.getElementById("transaction_id").value.trim();
-if(!txId){alert("Please enter the transaction ID.");return;}
-document.getElementById("displayTxId").textContent=txId;
-document.getElementById("verificationModal")
-    .classList.add("payment-modal-open");
+    document.getElementById("paymentForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      const txId = document.getElementById("transaction_id").value.trim();
+      if (!txId) {
+        alert("Please enter the transaction ID.");
+        return;
+      }
+      document.getElementById("displayTxId").textContent = txId;
+      document.getElementById("verificationModal").classList.add("payment-modal-open");
 
-setTimeout(() => {
-  document
-    .getElementById("verificationModal")
-    .classList.remove("payment-modal-open");
+      setTimeout(() => {
+        document.getElementById("verificationModal").classList.remove("payment-modal-open");
+        window.location.href = "chats.html";
+      }, 6000);
+    });
 
-  window.location.href = "chats.html";
-}, 8000);
-}); // closes the submit event listener
-function loadDepositDetails(){
-const amountInput=document.getElementById("amountInput");
-const cryptoInput=document.getElementById("cryptoInput");
-const networkInput=document.getElementById("networkInput");
-
-if(amountInput && amountInput.value.trim()){
-const amount=amountInput.value.trim();
-const crypto=cryptoInput && cryptoInput.value.trim()?cryptoInput.value.trim():"USDT";
-document.getElementById("displayAmount").textContent=amount+" "+crypto;
-document.getElementById("paymentAmount").textContent=amount+" "+crypto;
-}
-if(cryptoInput && cryptoInput.value.trim())document.getElementById("displayCrypto").textContent=cryptoInput.value.trim();
-if(networkInput && networkInput.value.trim()){
-document.getElementById("displayNetwork").textContent=networkInput.value.trim();
-document.getElementById("paymentNetwork").textContent=networkInput.value.trim();
-}
-}
-  function returnHome() {
+    function returnHome() {
       window.location.href = "user-account.html";
-  }
-</script>
-  
+    }
+  </script>
 
-<script type="module" src="authication.js"></script>
-<script type="module">
-  requireLogin();
-</script>
+  <script type="module" src="authication.js"></script>
+  <script type="module">
+    requireLogin();
+  </script>
   <script src="full-screenlogic.js"></script>
   <script type="module" src="firestoreadminlogic.js"></script>
+  <script src="wave-background.js"></script>
 </body>
 </html>
