@@ -1,409 +1,290 @@
-<!DOCTYPE html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1"><meta name=google content=notranslate><meta name=msapplication-TileColor content=#000000><meta name=theme-color content=#ffffff><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>Crypto Investments</title><script>document.addEventListener('DOMContentLoaded', function() {
-                document.documentElement.style.fontSize = document.documentElement.clientWidth / 20 + 'px'
-            })</script><script src=./static/uni.webview.js></script><script>// 待触发 `UniAppJSBridgeReady` 事件后，即可调用 uni 的 API。
-			document.addEventListener('UniAppJSBridgeReady', function() {
-				console.log('UniAppJSBridgeReady');
-				webUni.getEnv(function(res) {
-					
-				});
-			});</script>
-  
-<link rel=stylesheet href="allpoups.css">
-  <link rel=stylesheet href=./static/index.883130ca.css></head><body><noscript><strong>Please enable JavaScript to continue.</strong></noscript><div class=waves></div><div id=app></div><script src=./static/js/chunk-vendors.395c67ec.js></script><script src=./static/js/index.a822f0e6.js></script></body><link href="wave-background.css" rel="stylesheet" scoped>
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="google" content="notranslate">
+  <meta name="theme-color" content="#030917">
+  <title>Crypto Investments — AIVI AI</title>
+  <link rel="icon" type="image/png" href="assets/aivi-logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="wave-background.css">
+  <link rel="stylesheet" href="allpoups.css">
   <link rel="stylesheet" href="btcincom.css">
-<style>
-  
-  /* =========================
-   BUY POPUP
-========================= */
-
-.buy-popup {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.72);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-    box-sizing: border-box;
-
-    opacity: 0;
-    visibility: hidden;
-
-    transition:
-        opacity 0.25s ease,
-        visibility 0.25s ease;
-
-    z-index: 9999;
-}
-
-
-/* SHOW POPUP */
-
-.buy-popup.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-
-/* =========================
-   POPUP BOX
-========================= */
-
-.popup-box {
-    width: 100%;
-    max-width: 390px;
-
-    background: #10151d;
-
-    border: 1px solid #263342;
-    border-radius: 22px;
-
-    padding: 25px 20px;
-
-    box-sizing: border-box;
-
-    text-align: center;
-
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.6),
-        0 0 25px rgba(0, 140, 255, 0.12);
-
-    transform: translateY(20px) scale(0.96);
-
-    transition: transform 0.25s ease;
-}
-
-
-/* POPUP ANIMATION */
-
-.buy-popup.show .popup-box {
-    transform: translateY(0) scale(1);
-}
-
-
-/* =========================
-   TITLE
-========================= */
-
-.popup-box h3 {
-    margin: 0 0 18px;
-
-    color: #ffffff;
-
-    font-size: 20px;
-    font-weight: 700;
-}
-
-
-/* =========================
-   CRYPTO NAME
-========================= */
-
-.popup-crypto {
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    min-width: 70px;
-
-    padding: 8px 16px;
-
-    margin-bottom: 18px;
-
-    background: rgba(247, 147, 26, 0.12);
-
-    border: 1px solid rgba(247, 147, 26, 0.45);
-
-    border-radius: 50px;
-
-    color: #f7931a;
-
-    font-size: 14px;
-    font-weight: 700;
-
-    letter-spacing: 1px;
-
-    box-shadow:
-        0 0 15px rgba(247, 147, 26, 0.12);
-}
-
-
-/* =========================
-   TEXT
-========================= */
-
-.popup-box p {
-    margin: 12px 0;
-
-    color: #aeb8c5;
-
-    font-size: 14px;
-
-    line-height: 1.6;
-}
-
-
-/* =========================
-   SELECTED CRYPTO
-========================= */
-
-.popup-box .crypto {
-    display: inline-block;
-
-    color: #ffffff;
-
-    font-weight: 700;
-}
-
-
-/* =========================
-   AMOUNT
-========================= */
-
-#selectedAmount {
-    display: inline-block;
-
-    margin-left: 4px;
-
-    color: #00e676;
-
-    font-size: 17px;
-
-    font-weight: 800;
-}
-
-
-/* =========================
-   PROMOTIONAL NOTE
-========================= */
-
-.popup-box p:nth-of-type(2) {
-    margin-top: 18px;
-    padding: 12px;
-
-    background: rgba(0, 140, 255, 0.07);
-
-    border: 1px solid rgba(0, 140, 255, 0.18);
-
-    border-radius: 12px;
-
-    color: #9fcfff;
-
-    font-size: 12px;
-}
-
-
-/* =========================
-   BUY BUTTON
-========================= */
-
-.popup-buy {
-    width: 100%;
-
-    margin-top: 18px;
-
-    padding: 13px 16px;
-
-    border: none;
-    border-radius: 12px;
-
-    background: linear-gradient(
-        135deg,
-        #00c853,
-        #00e676
-    );
-
-    color: #06140b;
-
-    font-size: 14px;
-    font-weight: 800;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 6px 20px rgba(0, 230, 118, 0.22);
-
-    transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
-}
-
-.popup-buy:active {
-    transform: scale(0.97);
-
-    box-shadow:
-        0 3px 10px rgba(0, 230, 118, 0.15);
-}
-
-
-/* =========================
-   CANCEL BUTTON
-========================= */
-
-.close-popup {
-    width: 100%;
-
-    margin-top: 10px;
-
-    padding: 12px 16px;
-
-    border: 1px solid #303b48;
-
-    border-radius: 12px;
-
-    background: transparent;
-
-    color: #8e99a8;
-
-    font-size: 14px;
-    font-weight: 600;
-
-    cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease;
-}
-
-.close-popup:active {
-    background: #1a222c;
-    color: #ffffff;
-}
-</style>
-
-  
-
-
-<!-- =========================
-     BUY POPUP
-========================= -->
-
-<div class="buy-popup" id="buyPopup">
-
+  <style>
+    .buy-popup {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(2, 8, 20, 0.82);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 9999;
+    }
+
+    .buy-popup.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .popup-box {
+      width: 100%;
+      max-width: 390px;
+      background: linear-gradient(155deg, rgba(11, 26, 48, 0.97), rgba(5, 13, 26, 0.99));
+      border: 1px solid rgba(37, 184, 255, 0.48);
+      border-radius: 22px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 25px rgba(0, 140, 255, 0.18);
+      transform: translateY(16px) scale(0.96);
+      transition: transform 0.25s ease;
+    }
+
+    .buy-popup.show .popup-box {
+      transform: translateY(0) scale(1);
+    }
+
+    .popup-box h3 {
+      margin: 0 0 16px;
+      color: #ffffff;
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .popup-crypto-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px;
+      margin-bottom: 14px;
+      background: rgba(37, 184, 255, 0.12);
+      border: 1px solid rgba(37, 184, 255, 0.42);
+      border-radius: 999px;
+    }
+
+    .popup-crypto-wrap img {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+    }
+
+    .popup-crypto {
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+    }
+
+    .popup-box p {
+      margin: 10px 0;
+      color: #b4cae3;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .popup-box .crypto {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    #selectedAmount {
+      display: inline-block;
+      margin-left: 4px;
+      color: #00e676;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .promo-note {
+      margin-top: 16px !important;
+      padding: 12px;
+      background: rgba(37, 184, 255, 0.08);
+      border: 1px solid rgba(37, 184, 255, 0.24);
+      border-radius: 12px;
+      color: #cfe6ff !important;
+      font-size: 12.5px !important;
+    }
+
+    .popup-buy {
+      width: 100%;
+      margin-top: 18px;
+      padding: 13px 16px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #00c853, #00e676);
+      color: #04190d;
+      font-size: 14.5px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0, 230, 118, 0.25);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .popup-buy:hover {
+      filter: brightness(1.06);
+    }
+
+    .popup-buy:active {
+      transform: scale(0.98);
+    }
+
+    .close-popup {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #b4cae3;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .close-popup:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <noscript><strong>Please enable JavaScript to continue.</strong></noscript>
+  <div class="waves"></div>
+
+  <!-- =========================
+       BUY POPUP
+  ========================= -->
+  <div class="buy-popup" id="buyPopup" onclick="if(event.target===this) this.classList.remove('show')">
     <div class="popup-box">
+      <h3>Confirm Crypto Allocation</h3>
 
-        <h3>PLEASE CONFIRM PURCHASE</h3>
+      <div class="popup-crypto-wrap">
+        <img id="selectedCoinIcon" src="assets/btc.svg" alt="BTC">
+        <span class="popup-crypto" id="selectedBtc">BTC</span>
+      </div>
 
-        <div class="popup-crypto" id="selectedBtc">
-            BTC
+      <p>
+        You are buying <span class="crypto" id="selectedtc">Bitcoin</span> worth
+        <strong id="selectedAmount">UGX 0.00</strong>
+      </p>
+
+      <p class="promo-note">
+        🎁 Complete 5 or more Crypto Investments to stand a chance to win <strong>UGX 100,000</strong> bonus credit!
+      </p>
+
+      <button class="popup-buy" id="buy-buttoncry" type="button">
+        CONFIRM PURCHASE
+      </button>
+
+      <button class="close-popup" id="closePopup" type="button">
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================
+       ALERT POPUP
+  ========================= -->
+  <div id="allpopupOverlay" class="allpopup-overlay">
+    <div class="allpopup-alert">
+      <div id="allpopupText" class="allpopup-text"></div>
+      <button class="allpopup-close" type="button">OK</button>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <!-- ========= HEADER ========= -->
+    <header class="site-header">
+      <a class="brand-group" href="landing.html">
+        <img class="brand-logo" src="assets/aivi-logo.png" alt="AIVI AI Logo">
+        <div class="brand-titles">
+          <h1>Crypto Market <span>Spot Yield</span></h1>
+          <p class="brand-subtitle">Real-Time Digital Asset Portfolio</p>
+        </div>
+      </a>
+      <span class="header-pill">
+        <span class="header-pill-dot"></span>
+        24/7 Spot
+      </span>
+    </header>
+
+    <!-- ========= HERO VISUAL ========= -->
+    <div class="page-hero-visual">
+      <img src="assets/crypto-hero.jpg" alt="Crypto Market Waveform">
+      <div class="page-hero-caption">
+        <div>
+          <h2>Spot Crypto Income</h2>
+          <p>Allocate a percentage of your balance into top liquidity pairs.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========= INVEST SLIDER & STATUS ========= -->
+    <div class="page-header">
+      <div class="crypto-invest-card">
+        <div class="crypto-header-top">
+          <h2>Allocate Capital</h2>
+          <div class="balance-badge">
+            <span>Balance:</span>
+            <strong id="display-balance">0.00 UGX</strong>
+          </div>
         </div>
 
-        <p>
-            You are Buying <div class="crypto" id="selectedtc">
-            crypto
-            </div> Worth
-            <strong id="selectedAmount">0</strong>
-        </p>
-      <p > Carry out 5 or more Crypto Investment to stand a chance to win UGX100k for free !! </p>
-        <button class="popup-buy" id="buy-buttoncry">
-            BUY THIS CARD
-        </button>
+        <div class="invest-amount-container">
+          <p class="invest-label">Amount to Invest</p>
+          <h3 class="invest-value">
+            <span id="invest-amount">0.00</span>
+            <span class="currency">UGX</span>
+          </h3>
+          <p class="invest-percentage" id="invest-percentage-text">50% of Balance</p>
+        </div>
 
-        <button class="close-popup" id="closePopup">
-            Cancel
-        </button>
-
-    </div>
-
-</div>
-
-
-
-
-
-
-  
-    
-<div id="allpopupOverlay" class="allpopup-overlay">
-    <div class="allpopup-alert">
-        <div id="allpopupText" class="allpopup-text"></div>
-
-        <button class="allpopup-close">
-            OK
-        </button>
-    </div>
-</div>
-    
-<!-- -->
-<div class="ai-products-header">
-  
-
-  
-
-  <header class="page-header">
-    <div class="crypto-invest-card">
-  <!-- Top Header Row -->
-  <div class="crypto-header-top">
-    <h2>Buy Crypto</h2>
-    <div class="balance-badge">
-      <span>Balance:</span> 
-      <strong id="display-balance">0.00 UGX</strong>
-    </div>
-  </div>
-
-  <!-- Investment Amount Display -->
-  <div class="invest-amount-container">
-    <p class="invest-label">Amount to Invest</p>
-    <h3 class="invest-value">
-      <span id="invest-amount">0.00</span> 
-      <span class="currency">UGX</span>
-    </h3>
-    <p class="invest-percentage" id="invest-percentage-text">50% of Balance</p>
-  </div>
-
-  <!-- Slider Section -->
-  <div class="slider-section">
-    <input type="range" id="invest-slider" class="styled-slider" min="0" max="100" value="50" step="1">
-    
-    <!-- Percentage Markers -->
-    <div class="slider-markers">
-      <span onclick="setSlider(0)">0%</span>
-      <span onclick="setSlider(25)">25%</span>
-      <span onclick="setSlider(50)">50%</span>
-      <span onclick="setSlider(75)">75%</span>
-      <span onclick="setSlider(100)">100%</span>
-    </div>
-  </div>
-    </div>
-
-    <div class="status-wrap">
-      <div class="status" role="status" aria-live="polite">
-        <span id="status-dot" class="status-dot"></span>
-        <span id="status-text">Connecting to market...</span>
+        <div class="slider-section">
+          <input type="range" id="invest-slider" class="styled-slider" min="0" max="100" value="50" step="1" aria-label="Investment percentage">
+          <div class="slider-markers">
+            <span onclick="setSlider(0)">0%</span>
+            <span onclick="setSlider(25)">25%</span>
+            <span onclick="setSlider(50)">50%</span>
+            <span onclick="setSlider(75)">75%</span>
+            <span onclick="setSlider(100)">100%</span>
+          </div>
+        </div>
       </div>
-      <span id="last-updated"></span>
-    </div>
-  </header>
 
-  <div class="market-bar" aria-label="Market features">
-    <span class="market-tag">Real-time ticker</span>
-    <span class="market-tag">USDT spot pairs</span>
-    <span class="market-tag">24h price action</span>
-    <span class="market-tag">Volume &amp; volatility</span>
+      <div class="status-wrap">
+        <div class="status" role="status" aria-live="polite">
+          <span id="status-dot" class="status-dot"></span>
+          <span id="status-text">Connecting to market...</span>
+        </div>
+        <span id="last-updated"></span>
+      </div>
+    </div>
+
+    <div class="market-bar" aria-label="Market features">
+      <span class="market-tag">Real-time ticker</span>
+      <span class="market-tag">USDT spot pairs</span>
+      <span class="market-tag">24h price action</span>
+      <span class="market-tag">Volume &amp; volatility</span>
+    </div>
+
+    <main id="grid" class="grid"></main>
+
+    <p class="disclaimer">
+      Market data is streamed from global USDT spot pairs and may experience minor network delays. Digital assets are subject to market volatility — allocate responsibly using the balance slider above.
+    </p>
   </div>
 
-  <main id="grid" class="grid"></main>
-
-  <p class="disclaimer">
-    Market data is provided by spot market on Binance and may be delayed. Crypto assets are volatile.
-    This page provide financial investment platform. “Buy” links open the selected spot market on our broker where buy orders are placed.
-  </p>
-
-
-
-
-
-
-
-    
-
-      <!-- ========= BOTTOM NAV ========= -->
+  <!-- ========= BOTTOM NAV ========= -->
   <nav class="nav">
     <a href="landing.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
@@ -428,7 +309,7 @@
         <path d="M9 3.5h9a2.5 2.5 0 0 1 2.5 2.5v4.5a2.5 2.5 0 0 1-2.5 2.5h-1v3.2l-3.2-3.2h-1.3"/>
         <path d="M4.5 8h8A2.5 2.5 0 0 1 15 10.5v4a2.5 2.5 0 0 1-2.5 2.5H8l-4 3.2V17H4.5A2.5 2.5 0 0 1 2 14.5v-4A2.5 2.5 0 0 1 4.5 8z"/>
       </svg>
-      chats
+      Chats
     </a>
     <a href="ai.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
@@ -439,12 +320,11 @@
       </svg>
       AI
     </a>
-    <a href="#" class="active">
+    <a href="bitcoin-income.html" class="active">
       <svg viewBox="0 0 24 24">
         <line x1="9" x2="9" y1="4" y2="21" stroke="currentColor" stroke-width="2.2"/>
         <line x1="13" x2="13" y1="4" y2="21" stroke="currentColor" stroke-width="2.2"/>
-        <text x="11.8" y="18.2" text-anchor="middle" font-size="17" font-weight="800"
-              font-family="Arial,Helvetica,sans-serif" fill="currentColor">B</text>
+        <text x="11.8" y="18.2" text-anchor="middle" font-size="17" font-weight="800" font-family="Arial,Helvetica,sans-serif" fill="currentColor">B</text>
       </svg>
       Income
     </a>
@@ -456,73 +336,23 @@
       My
     </a>
   </nav>
-    <div style="padding-bottom: 45px;"></div>
-<script src="cryptoincome.js"></script> 
 
-    <script>
-const popup = document.getElementById("buyPopup");
-
-document.addEventListener("click", function (event) {
-
-    const buyButton = event.target.closest(".buy-button");
-
-    if (!buyButton) return;
-
-    const symbol = buyButton.dataset.symbol;
-
-    const coin = COINS.find(
-        c => c.symbol === symbol
-    );
-
-    if (!coin) {
-        console.error("Coin not found:", symbol);
-        return;
+  <script src="allpoups.js"></script>
+  <script src="cryptoincome.js"></script>
+  <script>
+    const closePopupBtn = document.getElementById("closePopup");
+    const buyPopupEl = document.getElementById("buyPopup");
+    if (closePopupBtn && buyPopupEl) {
+      closePopupBtn.addEventListener("click", function () {
+        buyPopupEl.classList.remove("show");
+      });
     }
-
-    // Get popup elements
-    const coinName =
-        document.getElementById("selectedBtc");
-
-    const coinSymbol =
-        document.getElementById("selectedCrypto");
-
-    const coinAmount =
-        document.getElementById("selectedAmount");
-
-    // Put selected coin information into popup
-    if (coinName) {
-        coinName.textContent = coin.name;
-    }
-
-    if (coinSymbol) {
-        coinSymbol.textContent = coin.label;
-    }
-
-    // Show popup
-    const popup =
-        document.getElementById("buyPopup");
-
-    if (popup) {
-        popup.classList.add("show");
-    }
-
-});
-const closePopup = document.getElementById("closePopup");
-    closePopup.addEventListener("click", function(){
-
-    popup.classList.remove("show");
-
-});
   </script>
-
-  
-<script type="module" src="withdrawals.js"> </script>
-<script type="module" src="authication.js"></script>
-<script type="module">
-  requireLogin();
-</script>
-    <script src="wave-background.js"></script>
-  
-  </body>
+  <script type="module" src="withdrawals.js"></script>
+  <script type="module" src="authication.js"></script>
+  <script type="module">
+    requireLogin();
+  </script>
+  <script src="wave-background.js"></script>
+</body>
 </html>
-    

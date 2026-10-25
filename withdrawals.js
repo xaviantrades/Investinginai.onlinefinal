@@ -6,12 +6,12 @@ import {
   orderBy,
   query,
   doc,
-    setDoc,
-    increment,
-    serverTimestamp,
-    updateDoc, 
-    arrayUnion,
-    getDoc
+  setDoc,
+  increment,
+  serverTimestamp,
+  updateDoc,
+  arrayUnion,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 /* =========================================================
@@ -30,6 +30,42 @@ const FIREBASE_CONFIG = {
 const COLLECTION_NAME = "withdrawals";
 const CONTAINER_ID = "withdraw-container";
 
+const AI_FALLBACK_IMAGES = [
+  "assets/ai-tier-1.jpg",
+  "assets/ai-tier-2.jpg",
+  "assets/ai-tier-3.jpg"
+];
+
+const DEFAULT_AI_MODELS = [
+  {
+    id: "default-ai-1",
+    type: "AIVI Neural Core S1",
+    lock: "3 days",
+    price: 30000,
+    totalIncome: 42000,
+    descrip: "Entry quantitative AI compute tier with automated 72-hour yield settlement.",
+    imageUrl: "assets/ai-tier-1.jpg"
+  },
+  {
+    id: "default-ai-2",
+    type: "AIVI Alpha Engine Pro",
+    lock: "7 days",
+    price: 100000,
+    totalIncome: 155000,
+    descrip: "High-frequency neural arbitrage engine designed for steady weekly compounding.",
+    imageUrl: "assets/ai-tier-2.jpg"
+  },
+  {
+    id: "default-ai-3",
+    type: "AIVI Supercluster VIP",
+    lock: "14 days",
+    price: 300000,
+    totalIncome: 510000,
+    descrip: "Enterprise GPU cluster allocation delivering maximum institutional AI returns.",
+    imageUrl: "assets/ai-tier-3.jpg"
+  }
+];
+
 /* =========================================================
  * Firebase init
  * ======================================================= */
@@ -37,384 +73,159 @@ const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const withdrawalsCollection = collection(db, COLLECTION_NAME);
 
-
-
-
 /* =========================================================
- * GET LOGGED IN USER INFORAMTION
+ * GET LOGGED IN USER INFORMATION
  * ======================================================= */
-
-
-
-
 function getCurrentUser() {
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  if (isLoggedIn !== "true") return null;
 
-    const isLoggedIn =
-        localStorage.getItem("isLoggedIn");
+  let userData = {};
+  try {
+    userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  } catch (error) {
+    console.error("Invalid userData in localStorage:", error);
+  }
 
-    if (isLoggedIn !== "true") {
-        return null;
-    }
-
-    let userData = {};
-
-    try {
-
-        userData = JSON.parse(
-            localStorage.getItem("userData") || "{}"
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Invalid userData in localStorage:",
-            error
-        );
-
-    }
-
-    return {
-
-        isLoggedIn: true,
-
-        userId:
-            localStorage.getItem("userId"),
-
-        phone:
-            localStorage.getItem("userPhone"),
-
-        ...userData
-
-    };
+  return {
+    isLoggedIn: true,
+    userId: localStorage.getItem("userId"),
+    phone: localStorage.getItem("userPhone"),
+    ...userData
+  };
 }
 
+/* =========================================================
+ * POPUP HELPER & CLOSE BINDING
+ * ======================================================= */
+let popupHideTimer = null;
 
-//------------------
-//AI BUYING LOGIC TO AI income
-//////----------------
+function bindAllPopupClose() {
+  const overlay = document.getElementById("allpopupOverlay");
+  if (!overlay || overlay.dataset.closeBound === "true") return;
+  overlay.dataset.closeBound = "true";
 
-async function saveSelectedItemToFirestore(data) {
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay || event.target.closest(".allpopup-close")) {
+      overlay.style.display = "none";
+      if (popupHideTimer) clearTimeout(popupHideTimer);
+    }
+  });
+}
+
+function showPopup(text) {
+  bindAllPopupClose();
+  const popup = document.getElementById("allpopupText");
+  const overlay = document.getElementById("allpopupOverlay");
+  if (!popup || !overlay) {
+    alert(text);
+    return;
+  }
+
+  popup.textContent = text;
+  overlay.style.display = "flex";
+
+  if (popupHideTimer) clearTimeout(popupHideTimer);
+  popupHideTimer = setTimeout(() => {
+    overlay.style.display = "none";
+  }, 8000);
+}
+
+window.showPopup = showPopup;
+bindAllPopupClose();
+
+/* =========================================================
+ * GET & DEDUCT DEPOSIT AMOUNT
+ * ======================================================= */
+async function getCurrentAmount() {
+  const currentUser = getCurrentUser();
+  if (!currentUser || !currentUser.userId) return 0;
 
   try {
+    const userRef = doc(db, "users", currentUser.userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      return Number(userSnap.data().amount) || 0;
+    }
+    return 0;
+  } catch (error) {
+    console.error("Error fetching deposit amount:", error);
+    return 0;
+  }
+}
 
-    // Get the currently logged-in user
-    const userId = localStorage.getItem("userId");
+async function deductAmount(amountToDeduct) {
+  const currentUser = getCurrentUser();
+  if (!currentUser || !currentUser.userId) {
+    showPopup("Please log in to complete this transaction.");
+    return false;
+  }
 
-    if (!userId) {
-      console.log("No logged-in user found.");
+  const deductNumber = parseFloat(amountToDeduct);
+  if (isNaN(deductNumber) || deductNumber <= 0) return false;
+
+  try {
+    const currentAmount = await getCurrentAmount();
+
+    if (currentAmount < deductNumber) {
+      showPopup(
+        `Insufficient balance! UGX ${deductNumber.toLocaleString()} exceeds your available account balance. Please deposit funds to continue.`
+      );
       return false;
     }
 
-    // ------------------------------------
-    // Convert lock to number
-    // Example:
-    // "2 days"  -> 2
-    // "7 days"  -> 7
-    // "30 days" -> 30
-    // ------------------------------------
-    const lockDays = parseInt(String(data.lock).replace(/\D/g, ""), 10);
+    const userRef = doc(db, "users", currentUser.userId);
 
-    if (isNaN(lockDays)) {
-      console.log("Invalid lock value:", data.lock);
-      return false;
-    }
-
-    // ------------------------------------
-    // Calculate expiry
-    // Current time + lock days
-    // ------------------------------------
-    const expiry = new Date();
-
-    expiry.setDate(expiry.getDate() + lockDays);
-
-    // ------------------------------------
-    // Data to save
-    // ------------------------------------
-    const investmentData = {
-      totalIncome: Number(data.totalIncome) || 0,
-
-      type: data.type || "",
-
-      lock: lockDays,
-
-      expiry: expiry,
-
-      createdAt: new Date()
-    };
-
-    // Current user's Firestore document
-    const userRef = doc(db, "users", userId);
-
-    // Add this investment without deleting existing ones
-    await updateDoc(userRef, {
-      investments: arrayUnion(investmentData)
-    });
-
-    console.log("Investment saved successfully:", investmentData);
+    await setDoc(
+      userRef,
+      {
+        amount: increment(-deductNumber),
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
 
     return true;
-
   } catch (error) {
-
-    console.error("Error saving investment:", error);
-
+    console.error("Error deducting amount:", error);
+    showPopup("Unable to process transaction right now. Please try again.");
     return false;
   }
 }
 
-
-
-// ==========================================
-// GET CURRENT DEPOSIT AMOUNT
-// (use like: const currentAmount = await getCurrentAmount();)
-// ==========================================
-
-async function getCurrentAmount() {
-
-    const currentUser =
-        getCurrentUser();
-
-    if (
-        !currentUser ||
-        !currentUser.userId
-    ) {
-
-        console.error(
-            "No logged-in user found."
-        );
-
-        return 0;
-    }
-
-
-    try {
-
-        const userRef =
-            doc(
-                db,
-                "users",
-                currentUser.userId
-            );
-
-
-        const userSnap =
-            await getDoc(userRef);
-
-
-        if (userSnap.exists()) {
-
-            return userSnap.data().amount || 0;
-        }
-
-
-        return 0;
-
-
-    } catch (error) {
-
-        console.error(
-            "Error fetching deposit amount:",
-            error
-        );
-
-        return 0;
-
-    }
-
-}
-
-
-
-// CARD PAYMENT LOGICS POP UP 
-function showPopup(text) {
-    const popup = document.getElementById("allpopupText");
-
-    popup.textContent = text;
-
-    const overlay = document.getElementById("allpopupOverlay");
-
-    overlay.style.display = "flex";
-  
-
-    // Hide popup after 3 seconds
-    setTimeout(() => {
-        overlay.style.display = "none";
-    }, 8000);
-}
-
-
-// ==========================================
-// DEDUCT FROM DEPOSIT AMOUNT
-// (use like: const success = await deductAmount(20);)
-// ==========================================
-
-async function deductAmount(amountToDeduct) {
-
-    const currentUser =
-        getCurrentUser();
-
-    if (
-        !currentUser ||
-        !currentUser.userId
-    ) {
-
-        console.error(
-            "No logged-in user found."
-        );
-
-        return false;
-    }
-
-
-    const deductNumber =
-        parseFloat(amountToDeduct);
-
-
-    if (
-        isNaN(deductNumber) ||
-        deductNumber <= 0
-    ) {
-
-        console.error(
-            "Invalid deduction amount:",
-            amountToDeduct
-        );
-
-        return false;
-    }
-
-
-    try {
-
-        // Check balance first so it never goes negative
-        const currentAmount =
-            await getCurrentAmount();
-
-
-        if (currentAmount < deductNumber) {
-
-            console.error(
-                "Insufficient balance. Current:",
-                currentAmount,
-                "Requested:",
-                deductNumber
-            );
-          
-
-showPopup(`ERROR! UGX ${deductNumber} is more than your Account balance, Deposite Cash dear !!`);
-
-            return false;
-        }
-
-
-        const userRef =
-            doc(
-                db,
-                "users",
-                currentUser.userId
-            );
-
-
-        await setDoc(
-
-            userRef,
-
-            {
-
-                amount:
-                    increment(-deductNumber),
-
-                updatedAt:
-                    serverTimestamp()
-
-            },
-
-            {
-
-                merge: true
-
-            }
-
-        );
-
-
-        console.log(
-            "Deducted",
-            deductNumber,
-            "from balance."
-        );
-
-
-        return true;
-
-
-    } catch (error) {
-
-        console.error(
-            "Error deducting amount:",
-            error
-        );
-
-        return false;
-
-    }
-
-}
-
 /* =====================================
-   CONFIRM BUY
-   ===================================== */
+   RAFFLE CONFIRM BUY
+===================================== */
 const confirmBuy = document.getElementById("confirmBuy");
 
 if (confirmBuy) {
-    confirmBuy.addEventListener("click", function () {
+  confirmBuy.addEventListener("click", async function () {
+    const selectedNumEl = document.getElementById("selectedNumber");
+    const num = selectedNumEl ? selectedNumEl.textContent.trim() : "";
+    if (!num || num === "0000") return;
 
-        if (!selectedRaffleNumber) {
-            return;
-        }
-
-        if (typeof deductAmount === "function") {
-            deductAmount(20000);
-        }
-
-        if (typeof showPopup === "function") {
-            showPopup("UGX 20,000 will be deducted from your account shortly");
-        }
-
-    });
+    const ok = await deductAmount(20000);
+    if (ok) {
+      document.getElementById("buyPopup")?.classList.remove("show");
+      showPopup(`Raffle card #${num} purchased! UGX 20,000 has been deducted from your balance.`);
+    }
+  });
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* =========================================================
  * Helpers
  * ======================================================= */
-
-/** Format a numeric value as "1,234.00". Falls back to the raw value. */
 function formatMoney(value) {
   const number = Number(value);
-
   if (value === null || value === undefined || value === "" || Number.isNaN(number)) {
     return "—";
   }
-
   return number.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
 }
 
-/** Create an element with an optional class and text content. */
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -423,21 +234,22 @@ function el(tag, className, text) {
 }
 
 /* =========================================================
- * Rendering
+ * AI Model Cards Rendering
  * ======================================================= */
-
-function createImage(imageUrl) {
+function createImage(imageUrl, index = 0) {
   const wrapper = el("div", "withdraw-image");
-
-  if (!imageUrl) return wrapper;
+  const fallbackSrc = AI_FALLBACK_IMAGES[index % AI_FALLBACK_IMAGES.length];
 
   const image = el("img");
-  image.src = imageUrl;
-  image.alt = "Withdrawal machine";
+  image.src = imageUrl || fallbackSrc;
+  image.alt = "AI Investment Model";
   image.loading = "lazy";
 
-  // Drop the whole wrapper if the image fails, so no empty box is left behind.
-  image.addEventListener("error", () => wrapper.remove());
+  image.addEventListener("error", () => {
+    if (image.src.indexOf(fallbackSrc) === -1) {
+      image.src = fallbackSrc;
+    }
+  });
 
   wrapper.appendChild(image);
   return wrapper;
@@ -447,34 +259,42 @@ function createInfo(data) {
   const info = el("div", "withdraw-info");
 
   info.append(
-    el("h2", "withdraw-title", data.type || "Untitled"),
-    el("p", "withdraw-line", `Lock: ${data.lock || "—"}`),
-    el("p", "withdraw-descrip", `Description: ${data.descrip || "notes"}`),
-    el("p", "withdraw-line", `Buy Price: ${formatMoney(data.price)}`),
-    el("p", "withdraw-line", `Payout Income: ${formatMoney(data.totalIncome)}`)
+    el("h2", "withdraw-title", data.type || "AI Model Tier"),
+    el("p", "withdraw-line", `Lock Period: ${data.lock || "—"}`),
+    el("p", "withdraw-descrip", data.descrip || "Automated quantitative AI yield contract."),
+    el("p", "withdraw-line", `Buy Price: UGX ${formatMoney(data.price)}`),
+    el("p", "withdraw-line", `Payout Income: UGX ${formatMoney(data.totalIncome)}`)
   );
 
   return info;
 }
 
-/** Build one withdrawal card element. */
-function createWithdrawalCard(data) {
+function createWithdrawalCard(data, index = 0) {
   const card = el("article", "withdraw-card");
-  card.append(createImage(data.imageUrl), createInfo(data));
-  
-  // NEW: Add a click listener that passes the specific item's data to our handler
+  const fallbackSrc = AI_FALLBACK_IMAGES[index % AI_FALLBACK_IMAGES.length];
+  const enrichedData = { ...data, resolvedImage: data.imageUrl || fallbackSrc };
+
+  card.append(createImage(data.imageUrl, index), createInfo(data));
+
   card.addEventListener("click", () => {
-    handleCardClick(data);
+    handleCardClick(enrichedData);
+    if (typeof window.openAi === "function") {
+      window.openAi();
+    } else {
+      const overlay = document.getElementById("aiOverlay");
+      if (overlay) {
+        overlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+      }
+    }
   });
-  
+
   return card;
 }
 
-/** Render a list of withdrawals into the container in one paint. */
 function renderWithdrawals(container, items) {
   const fragment = document.createDocumentFragment();
-  items.forEach((data) => fragment.appendChild(createWithdrawalCard(data)));
-
+  items.forEach((data, idx) => fragment.appendChild(createWithdrawalCard(data, idx)));
   container.replaceChildren(fragment);
 }
 
@@ -482,382 +302,301 @@ function renderEmpty(container, text) {
   container.replaceChildren(el("p", "withdraw-empty", text));
 }
 
-/* =========================================================
- * Data access
- * ======================================================= */
-
 async function fetchWithdrawals() {
-  // Newest first; requires the createdAt field written by the admin form.
-  const snapshot = await getDocs(
-    query(withdrawalsCollection, orderBy("createdAt", "desc"))
-  );
-
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  const snapshot = await getDocs(query(withdrawalsCollection, orderBy("createdAt", "desc")));
+  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
 }
 
-/* =========================================================
- * Controller / Click Handler
- * ======================================================= */
-
-/** 
- * NEW: Exposed function to handle the click event.
- * You can import this into another file, or modify it directly 
- * to trigger your UI screen layer.
- */
-// Holds whichever card was most recently clicked
 let selectedItem = null;
 
-
 export function handleCardClick(data) {
-
-  console.log("Card clicked! Here is the data:", data);
-
-  selectedItem = data; // save the raw data for later use
+  selectedItem = data;
 
   const title = document.getElementById("withdraw-title");
   const lock = document.getElementById("withdraw-lock");
   const price = document.getElementById("withdraw-price");
   const totalIncome = document.getElementById("withdraw-total-income");
+  const modalImg = document.getElementById("withdraw-modal-img");
 
-  title.textContent = data.type || "Untitled";
-  lock.textContent = `Lock: ${data.lock || "—"}`;
-  price.textContent = `Pay: ${formatMoney(data.price)}`;
-  totalIncome.textContent = `Get: ${formatMoney(data.totalIncome)}`;
-
+  if (title) title.textContent = data.type || "AI Model Tier";
+  if (lock) lock.textContent = `Lock Period: ${data.lock || "—"}`;
+  if (price) price.textContent = `Investment Price: UGX ${formatMoney(data.price)}`;
+  if (totalIncome) totalIncome.textContent = `Total Payout: UGX ${formatMoney(data.totalIncome)}`;
+  if (modalImg) {
+    modalImg.src = data.resolvedImage || data.imageUrl || "assets/ai-tier-1.jpg";
+    modalImg.onerror = () => {
+      modalImg.src = "assets/ai-tier-1.jpg";
+    };
+  }
 }
 
-
-// Attach ONCE — place this at the bottom of the file, outside handleCardClick
-const placeAibuyBtn =
-    document.getElementById("place-aibuy");
+const placeAibuyBtn = document.getElementById("place-aibuy");
 
 if (placeAibuyBtn) {
+  placeAibuyBtn.addEventListener("click", async function () {
+    if (!selectedItem) return;
 
-    placeAibuyBtn.addEventListener("click", async function () {
-
-        if (!selectedItem) {
-            console.error("No card selected.");
-            return;
-        }
-
-        try {
-
-            // --------------------------------
-            // 1. Deduct the purchase amount
-            // --------------------------------
-            const success =
-                await deductAmount(selectedItem.price);
-
-            if (!success) {
-                console.error("Amount deduction failed.");
-                return;
-            }
-
-            console.log("Deducted successfully.");
-
-
-            // --------------------------------
-            // 2. Get logged-in user's ID
-            // --------------------------------
-            const userId =
-                localStorage.getItem("userId");
-
-            if (!userId) {
-                console.error("No logged-in user found.");
-                return;
-            }
-
-
-            // --------------------------------
-            // 3. Convert lock to number
-            // --------------------------------
-            const lockDays =
-                parseInt(
-                    String(selectedItem.lock).replace(/\D/g, ""),
-                    10
-                );
-
-            if (isNaN(lockDays)) {
-                console.error(
-                    "Invalid lock value:",
-                    selectedItem.lock
-                );
-                return;
-            }
-
-
-            // --------------------------------
-            // 4. Calculate expiry date
-            // --------------------------------
-            const expiry = new Date();
-
-            expiry.setDate(
-                expiry.getDate() + lockDays
-            );
-
-
-            // --------------------------------
-            // 5. Create investment object
-            // --------------------------------
-            const investmentData = {
-
-                type: selectedItem.type || "",
-
-                price:
-                    Number(selectedItem.price) || 0,
-
-                totalIncome:
-                    Number(selectedItem.totalIncome) || 0,
-
-                lock: lockDays,
-
-                expiry: expiry,
-
-                createdAt: new Date()
-            };
-
-
-            // --------------------------------
-            // 6. User Firestore document
-            // --------------------------------
-            const userRef =
-                doc(db, "users", userId);
-
-
-            // --------------------------------
-            // 7. Add investment
-            // --------------------------------
-            await updateDoc(userRef, {
-
-                investments:
-                    arrayUnion(investmentData)
-
-            });
-
-
-            console.log(
-                "Investment saved successfully:",
-                investmentData
-            );
-
-
-            // --------------------------------
-            // 8. Show success popup
-            // --------------------------------
-            showPopup(
-                `UGX ${Number(selectedItem.price).toLocaleString()} will be deducted from your account shortly`
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "Buy/investment error:",
-                error
-            );
-
-        }
-
-    });
-
-}
-
-
-///////////////// --------------------------------------
-// CHECKING AI INVESTMENT STATUS OF USER
-// --------------------------------------
-
-function checkExpiry(expiry) {
-
-    if (!expiry) {
-        console.log("No expiry date found.");
-        return false;
-    }
-
-    const expiryDate = expiry.toDate
-        ? expiry.toDate()
-        : new Date(expiry);
-
-    return new Date() >= expiryDate;
-}
-
-
-async function checkInvestmentExpiry() {
+    try {
+      const success = await deductAmount(selectedItem.price);
+      if (!success) return;
 
       const userId = localStorage.getItem("userId");
+      if (!userId) return;
 
-      if (!userId) {
-          document.getElementById("status-message").innerText = "No logged-in user found.";
-          return false;
+      const lockDays = parseInt(String(selectedItem.lock).replace(/\D/g, ""), 10);
+      if (isNaN(lockDays)) return;
+
+      const expiry = new Date();
+      expiry.setDate(expiry.getDate() + lockDays);
+
+      const investmentData = {
+        type: selectedItem.type || "AI Model",
+        category: "ai",
+        price: Number(selectedItem.price) || 0,
+        totalIncome: Number(selectedItem.totalIncome) || 0,
+        lock: lockDays,
+        expiry: expiry,
+        createdAt: new Date()
+      };
+
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, {
+        investments: arrayUnion(investmentData)
+      });
+
+      if (typeof window.closeAi === "function") {
+        window.closeAi();
       }
 
-      try {
+      showPopup(
+        `Success! UGX ${Number(selectedItem.price).toLocaleString()} invested in ${selectedItem.type}.`
+      );
+    } catch (error) {
+      console.error("Buy/investment error:", error);
+    }
+  });
+}
 
-          const userRef = doc(db, "users", userId);
+/* =========================================================
+ * INVESTMENT HISTORY (history.html)
+ * ======================================================= */
+function checkExpiry(expiry) {
+  if (!expiry) return false;
+  const expiryDate = expiry.toDate ? expiry.toDate() : new Date(expiry);
+  return new Date() >= expiryDate;
+}
 
-          const userSnap = await getDoc(userRef);
+function applyHistoryTabFilter(tab = "ai") {
+  const container = document.getElementById("investments-container");
+  const noInvMsg = document.getElementById("no-investments-message");
+  const totalEl = document.getElementById("total-investments");
+  if (!container) return;
 
-          if (!userSnap.exists()) {
-              document.getElementById("status-message").innerText = "User document not found.";
-              return false;
-          }
+  const cards = container.querySelectorAll(".investment-card");
+  let visibleCount = 0;
+  let visibleTotal = 0;
 
-          const userData = userSnap.data();
+  cards.forEach((card) => {
+    const cat = card.dataset.category || "ai";
+    const match = cat === tab;
+    card.hidden = !match;
+    if (match) {
+      visibleCount++;
+      visibleTotal += Number(card.dataset.price || 0);
+    }
+  });
 
-          const investments = userData.investments || [];
-
-          document.getElementById("user-id").innerText = userId;
-          document.getElementById("total-investments").innerText = investments.length;
-
-          const container = document.getElementById("investments-container");
-          container.innerHTML = ""; // clear previous results before writing new ones
-
-          if (investments.length === 0) {
-              document.getElementById("no-investments-message").innerText = "No investments found.";
-              return true;
-          } else {
-              document.getElementById("no-investments-message").innerText = "";
-          }
-
-          investments.forEach((investment, index) => {
-
-              const expired =
-                  checkExpiry(investment.expiry);
-
-              // Convert Firestore timestamps
-              const expiryDate =
-                  investment.expiry?.toDate
-                      ? investment.expiry.toDate()
-                      : investment.expiry
-                          ? new Date(investment.expiry)
-                          : null;
-
-              const createdDate =
-                  investment.createdAt?.toDate
-                      ? investment.createdAt.toDate()
-                      : investment.createdAt
-                          ? new Date(investment.createdAt)
-                          : null;
-
-              const card = document.createElement("div");
-card.className = "investment-card";
-
-const title = document.createElement("h3");
-title.className = "investment-title";
-title.innerText = `INVESTMENT ${index + 1}`;
-card.appendChild(title);
-
-const typeEl = document.createElement("p");
-typeEl.className = "investment-info";
-typeEl.innerText = `AI Type: ${investment.type}`;
-card.appendChild(typeEl);
-
-const priceEl = document.createElement("p");
-priceEl.className = "investment-info investment-price";
-priceEl.innerText =
-  `Price: UGX ${Number(investment.price || 0).toLocaleString()}`;
-card.appendChild(priceEl);
-
-const incomeEl = document.createElement("p");
-incomeEl.className = "investment-info investment-profit";
-incomeEl.innerText =
-  `Profit: UGX ${Number(investment.totalIncome || 0).toLocaleString()}`;
-card.appendChild(incomeEl);
-
-const lockEl = document.createElement("p");
-lockEl.className = "investment-info investment-lock";
-lockEl.innerText = `Lock: ${investment.lock} days`;
-card.appendChild(lockEl);
-
-const createdEl = document.createElement("p");
-createdEl.className = "investment-info investment-created";
-createdEl.innerText =
-  `Created At: ${createdDate ? createdDate.toLocaleString() : "N/A"}`;
-card.appendChild(createdEl);
-
-const expiryEl = document.createElement("p");
-expiryEl.className = "investment-info investment-payout";
-expiryEl.innerText =
-  `Payout Date: ${expiryDate ? expiryDate.toLocaleString() : "N/A"}`;
-card.appendChild(expiryEl);
-
-const statusEl = document.createElement("p");
-statusEl.className =
-  `investment-status ${expired ? "status-paid" : "status-active"}`;
-
-statusEl.innerText =
-  `Status: ${expired ? "PAID OUT" : "NOT PAID OUT"}`;
-
-card.appendChild(statusEl);
-
-              // Show remaining time if still active
-              if (!expired && expiryDate) {
-
-                  const remaining =
-                      expiryDate.getTime() - Date.now();
-
-                  const remainingDays =
-                      Math.floor(
-                          remaining / (1000 * 60 * 60 * 24)
-                      );
-
-                  const remainingHours =
-                      Math.floor(
-                          (remaining % (1000 * 60 * 60 * 24)) /
-                          (1000 * 60 * 60)
-                      );
-
-                  const remainingEl = document.createElement("p");
-                  remainingEl.innerText = `Remaining: ${remainingDays} days, ${remainingHours} hours`;
-                  card.appendChild(remainingEl);
-              }
-
-              container.appendChild(card);
-          });
-
-          document.getElementById("complete-message").innerText = "AI History Check is Complete";
-
-          return true;
-
-      } catch (err) {
-
-          document.getElementById("error-message").innerText = "Error checking investments: " + err.message;
-          return false;
-      }
+  if (totalEl) {
+    totalEl.textContent = `UGX ${visibleTotal.toLocaleString("en-US")}`;
   }
 
+  if (noInvMsg) {
+    noInvMsg.style.display = visibleCount === 0 ? "block" : "none";
+    noInvMsg.textContent =
+      tab === "crypto"
+        ? "No Crypto investments found yet."
+        : "No AI investments found yet.";
+  }
+}
 
+window.filterInvestmentCards = applyHistoryTabFilter;
 
+async function checkInvestmentExpiry() {
+  const container = document.getElementById("investments-container");
+  if (!container) return false;
 
+  const statusMsg = document.getElementById("status-message");
+  const noInvMsg = document.getElementById("no-investments-message");
+  const errorMsg = document.getElementById("error-message");
+  const userIdEl = document.getElementById("user-id");
 
+  const userId = localStorage.getItem("userId");
+
+  if (!userId) {
+    if (userIdEl) userIdEl.textContent = "Guest";
+    if (noInvMsg) {
+      noInvMsg.textContent = "Please log in to view your investment transactions.";
+      noInvMsg.style.display = "block";
+    }
+    return false;
+  }
+
+  if (userIdEl) {
+    try {
+      userIdEl.textContent = decodeURIComponent(userId);
+    } catch {
+      userIdEl.textContent = userId;
+    }
+  }
+
+  try {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      if (noInvMsg) {
+        noInvMsg.textContent = "No investments found yet.";
+        noInvMsg.style.display = "block";
+      }
+      return false;
+    }
+
+    const userData = userSnap.data();
+    const investments = userData.investments || [];
+    const btcBalance = Number(userData.btcBalance) || 0;
+
+    container.innerHTML = "";
+
+    investments.forEach((investment, index) => {
+      const expired = checkExpiry(investment.expiry);
+      const expiryDate = investment.expiry?.toDate
+        ? investment.expiry.toDate()
+        : investment.expiry
+        ? new Date(investment.expiry)
+        : null;
+
+      const createdDate = investment.createdAt?.toDate
+        ? investment.createdAt.toDate()
+        : investment.createdAt
+        ? new Date(investment.createdAt)
+        : null;
+
+      const rawType = String(investment.type || "AI Model");
+      const isCrypto =
+        String(investment.category || "").toLowerCase() === "crypto" ||
+        /crypto|btc|bitcoin|usdt|eth|sol|bnb|xrp|doge/i.test(rawType);
+
+      const card = document.createElement("div");
+      card.className = "investment-card";
+      card.dataset.category = isCrypto ? "crypto" : "ai";
+      card.dataset.price = String(Number(investment.price) || 0);
+
+      const title = document.createElement("h3");
+      title.className = "investment-title";
+      title.innerText = `${rawType} (#${index + 1})`;
+      card.appendChild(title);
+
+      const priceEl = document.createElement("p");
+      priceEl.className = "investment-info investment-price";
+      priceEl.innerText = `Invested: UGX ${Number(investment.price || 0).toLocaleString()}`;
+      card.appendChild(priceEl);
+
+      const incomeEl = document.createElement("p");
+      incomeEl.className = "investment-info investment-profit";
+      incomeEl.innerText = `Expected Payout: UGX ${Number(investment.totalIncome || 0).toLocaleString()}`;
+      card.appendChild(incomeEl);
+
+      const lockEl = document.createElement("p");
+      lockEl.className = "investment-info investment-lock";
+      lockEl.innerText = `Lock Period: ${investment.lock} days`;
+      card.appendChild(lockEl);
+
+      const createdEl = document.createElement("p");
+      createdEl.className = "investment-info investment-created";
+      createdEl.innerText = `Created: ${createdDate ? createdDate.toLocaleString() : "N/A"}`;
+      card.appendChild(createdEl);
+
+      const expiryEl = document.createElement("p");
+      expiryEl.className = "investment-info investment-payout";
+      expiryEl.innerText = `Payout Date: ${expiryDate ? expiryDate.toLocaleString() : "N/A"}`;
+      card.appendChild(expiryEl);
+
+      const statusEl = document.createElement("p");
+      statusEl.className = `investment-status ${expired ? "status-paid" : "status-active"}`;
+      statusEl.innerText = `Status: ${expired ? "SETTLED / PAID OUT" : "ACTIVE — ACCRUING YIELD"}`;
+      card.appendChild(statusEl);
+
+      if (!expired && expiryDate) {
+        const remaining = expiryDate.getTime() - Date.now();
+        const remainingDays = Math.max(0, Math.floor(remaining / (1000 * 60 * 60 * 24)));
+        const remainingHours = Math.max(
+          0,
+          Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        );
+
+        const remainingEl = document.createElement("p");
+        remainingEl.className = "investment-info";
+        remainingEl.innerText = `Time Remaining: ${remainingDays}d ${remainingHours}h`;
+        card.appendChild(remainingEl);
+      }
+
+      container.appendChild(card);
+    });
+
+    if (btcBalance > 0) {
+      const cryptoCard = document.createElement("div");
+      cryptoCard.className = "investment-card";
+      cryptoCard.dataset.category = "crypto";
+      cryptoCard.dataset.price = String(btcBalance);
+      cryptoCard.innerHTML = `
+        <h3 class="investment-title">Active Spot Crypto Allocation</h3>
+        <p class="investment-info investment-price">Allocated Capital: UGX ${btcBalance.toLocaleString("en-US")}</p>
+        <p class="investment-info">Tracking live BTC/USDT spot market performance (5x dynamic index).</p>
+        <p class="investment-status status-active">Status: ACTIVE PORTFOLIO</p>
+      `;
+      container.appendChild(cryptoCard);
+    }
+
+    const activeTab = document.getElementById("btn-crypto")?.classList.contains("active")
+      ? "crypto"
+      : "ai";
+    applyHistoryTabFilter(activeTab);
+
+    if (statusMsg) statusMsg.textContent = "";
+    return true;
+  } catch (err) {
+    console.error("Error checking investments:", err);
+    if (errorMsg) {
+      errorMsg.textContent = "Unable to load transactions right now. Please refresh.";
+      errorMsg.style.display = "block";
+    }
+    return false;
+  }
+}
+
+/* =========================================================
+ * Load AI Models on ai.html
+ * ======================================================= */
 async function loadWithdrawals() {
   const container = document.getElementById(CONTAINER_ID);
+  if (!container) return;
 
-  if (!container) {
-    console.error(`No element with id="${CONTAINER_ID}" was found.`);
-    return;
-  }
-
-  renderEmpty(container, "Loading…");
+  renderEmpty(container, "Loading AI investment models…");
 
   try {
     const withdrawals = await fetchWithdrawals();
 
     if (withdrawals.length === 0) {
-      renderEmpty(container, "No withdrawal records found.");
+      renderWithdrawals(container, DEFAULT_AI_MODELS);
       return;
     }
 
     renderWithdrawals(container, withdrawals);
   } catch (error) {
-    console.error("Error loading withdrawal data from Firestore:", error);
-    renderEmpty(container, "Could not load withdrawals. Please try again.");
+    console.error("Error loading AI model data from Firestore:", error);
+    renderWithdrawals(container, DEFAULT_AI_MODELS);
   }
 }
-
-/* =========================================================
- * Start
- * ======================================================= */
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", loadWithdrawals);
@@ -865,874 +604,396 @@ if (document.readyState === "loading") {
   loadWithdrawals();
 }
 
-// Exporting handleCardClick alongside loadWithdrawals
 export { loadWithdrawals };
 
-
-
-
-
-
-
-// ===============================
-// ADD / UPDATE USER BTC 
-
+/* =========================================================
+ * BTC / CRYPTO PORTFOLIO LOGIC
+ * ======================================================= */
 async function saveBTCBalance(btcBalance) {
+  const currentUser = getCurrentUser();
+  if (!currentUser || !currentUser.userId) return false;
 
-    const currentUser = getCurrentUser();
-
-    if (!currentUser || !currentUser.userId) {
-
-        console.error("No logged-in user found.");
-
-        return false;
-    }
-
-    try {
-
-        const userRef = doc(
-            db,
-            "users",
-            currentUser.userId
-        );
-
-        await updateDoc(
-            userRef,
-            {
-                btcBalance: increment(
-                    Number(btcBalance)
-                )
-            }
-        );
-
-        console.log(
-            "BTC balance changed by:",
-            btcBalance
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "Error updating BTC balance:",
-            error
-        );
-
-        return false;
-    }
+  try {
+    const userRef = doc(db, "users", currentUser.userId);
+    await setDoc(
+      userRef,
+      { btcBalance: increment(Number(btcBalance)) },
+      { merge: true }
+    );
+    return true;
+  } catch (error) {
+    console.error("Error updating BTC balance:", error);
+    return false;
+  }
 }
 
-
-// ===============================================
-// SAVE / SET INITIAL BTC PRICE
-// ===============================================
 async function saveInitialBTCPrice(price) {
+  const currentUser = getCurrentUser();
+  if (!currentUser || !currentUser.userId) return false;
 
-    const currentUser = getCurrentUser();
+  const numericPrice = Number(price);
+  if (!Number.isFinite(numericPrice) || numericPrice <= 0) return false;
 
-    if (!currentUser || !currentUser.userId) {
-        console.error("No logged-in user found.");
-        return false;
-    }
-
-    const numericPrice = Number(price);
-
-    if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-        console.error("Invalid BTC price:", price);
-        return false;
-    }
-
-    try {
-
-        const userRef = doc(
-            db,
-            "users",
-            currentUser.userId
-        );
-
-        await setDoc(
-            userRef,
-            {
-                initialBTCPrice: numericPrice
-            },
-            {
-                merge: true
-            }
-        );
-
-        console.log(
-            "Initial BTC price saved:",
-            numericPrice
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "Error saving initial BTC price:",
-            error
-        );
-
-        return false;
-    }
+  try {
+    const userRef = doc(db, "users", currentUser.userId);
+    await setDoc(userRef, { initialBTCPrice: numericPrice }, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error saving initial BTC price:", error);
+    return false;
+  }
 }
 
-
-// ===============================================
-// GET STORED INITIAL BTC PRICE
-// ===============================================
 async function getInitialBTCPrice() {
+  const currentUser = getCurrentUser();
+  if (!currentUser || !currentUser.userId) return null;
 
-    const currentUser = getCurrentUser();
+  try {
+    const userRef = doc(db, "users", currentUser.userId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return null;
 
-    if (!currentUser || !currentUser.userId) {
-        console.error("No logged-in user found.");
-        return null;
-    }
-
-    try {
-
-        const userRef = doc(
-            db,
-            "users",
-            currentUser.userId
-        );
-
-        const userSnap = await getDoc(userRef);
-
-        if (!userSnap.exists()) {
-            return null;
-        }
-
-        const data = userSnap.data();
-
-        const storedPrice = Number(
-            data.initialBTCPrice
-        );
-
-        if (
-            !Number.isFinite(storedPrice) ||
-            storedPrice <= 0
-        ) {
-            return null;
-        }
-
-        return storedPrice;
-
-    } catch (error) {
-
-        console.error(
-            "Error getting initial BTC price:",
-            error
-        );
-
-        return null;
-    }
+    const storedPrice = Number(userSnap.data().initialBTCPrice);
+    return Number.isFinite(storedPrice) && storedPrice > 0 ? storedPrice : null;
+  } catch (error) {
+    console.error("Error getting initial BTC price:", error);
+    return null;
+  }
 }
 
-
-//----------------------------------------
-//BTC LOGICS
-//-------------------------------------------
-document.addEventListener('DOMContentLoaded', async () => {
-  const slider = document.getElementById('invest-slider');
-  const displayBalance = document.getElementById('display-balance');
-  const investAmount = document.getElementById('invest-amount');
-  const investPercentageText = document.getElementById('invest-percentage-text');
-  const buybtn = document.getElementById('buy-buttoncry');
-  const coinamount =
-        document.getElementById("selectedAmount");
-// moved up, before the guard
+document.addEventListener("DOMContentLoaded", async () => {
+  const slider = document.getElementById("invest-slider");
+  const displayBalance = document.getElementById("display-balance");
+  const investAmount = document.getElementById("invest-amount");
+  const investPercentageText = document.getElementById("invest-percentage-text");
+  const buybtn = document.getElementById("buy-buttoncry");
+  const coinamount = document.getElementById("selectedAmount");
 
   if (!slider || !displayBalance || !investAmount || !investPercentageText || !buybtn || !coinamount) {
     return;
   }
 
-  const currentBalance = await getCurrentAmount();
-  displayBalance.innerText = `${currentBalance.toLocaleString()} UGX`;
+  let currentBalance = await getCurrentAmount();
+  displayBalance.innerText = `${currentBalance.toLocaleString("en-US")} UGX`;
 
-  let calculatedAmount = 0; // shared across updateInvestment and the click handler
+  let calculatedAmount = 0;
 
   function updateInvestment() {
-    const percentage = slider.value;
-    calculatedAmount = (percentage / 100) * currentBalance; // no 'const' here
-    investAmount.innerText = calculatedAmount.toLocaleString(undefined, {
+    const percentage = Number(slider.value) || 0;
+    calculatedAmount = (percentage / 100) * currentBalance;
+    investAmount.innerText = calculatedAmount.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
     investPercentageText.innerText = `${percentage}% of Balance`;
-    slider.style.setProperty('--slider-progress', `${percentage}%`);
-    coinamount.innerText = `${calculatedAmount.toLocaleString()} UGX`;
+    slider.style.setProperty("--slider-progress", `${percentage}%`);
+    coinamount.innerText = `UGX ${calculatedAmount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
   }
-  
 
-  slider.addEventListener('input', updateInvestment);
+  slider.addEventListener("input", updateInvestment);
 
-  
-//----------
   buybtn.addEventListener("click", async function () {
     if (calculatedAmount <= 0) {
-      showPopup("Move the slider to choose an investment amount first.");
+      document.getElementById("buyPopup")?.classList.remove("show");
+      showPopup(
+        currentBalance <= 0
+          ? "Your account balance is UGX 0.00. Please deposit funds first to invest in crypto."
+          : "Move the slider above 0% to choose an investment amount."
+      );
       return;
     }
 
-    const success = await await saveBTCBalance(calculatedAmount);
+    const deducted = await deductAmount(calculatedAmount);
+    if (!deducted) return;
+
+    const success = await saveBTCBalance(calculatedAmount);
     if (success) {
-      showPopup(`UGX ${formatMoney(calculatedAmount)} will be deducted from your account shortly.`);
-      deductAmount(calculatedAmount);
-      // consider refreshing displayBalance here so the UI reflects the new total
+      currentBalance = Math.max(0, currentBalance - calculatedAmount);
+      displayBalance.innerText = `${currentBalance.toLocaleString("en-US")} UGX`;
+      updateInvestment();
+      document.getElementById("buyPopup")?.classList.remove("show");
+      showPopup(`Success! UGX ${formatMoney(calculatedAmount)} allocated to your crypto portfolio.`);
     }
   });
 
-
-//-------------
-
-  
   updateInvestment();
 });
 
-// Helper function to allow users to click text markers (e.g., "25%", "50%") to jump the slider
 function setSlider(value) {
-  const slider = document.getElementById('invest-slider');
+  const slider = document.getElementById("invest-slider");
   if (slider) {
     slider.value = value;
-    // Trigger the input event so updateInvestment runs automatically
-    slider.dispatchEvent(new Event('input'));
+    slider.dispatchEvent(new Event("input"));
   }
 }
 
+window.setSlider = setSlider;
 
-
-/// WITHDRAL LOGIC CODES ENJOY
-
+/* =========================================================
+ * WITHDRAWAL BUTTON LOGIC
+ * ======================================================= */
 (function () {
-    const btn = document.getElementById("withdrawl-btn");
-    const input1 = document.getElementById("inputcrypt");
-    const input2 = document.getElementById("amountInput");
+  const btn = document.getElementById("withdrawl-btn");
+  const input1 = document.getElementById("inputcrypt");
+  const input2 = document.getElementById("amountInput");
 
-    // If this page doesn't contain the required HTML, do nothing.
-    if (!btn || (!input1 && !input2)) {
-        return;
+  if (!btn || (!input1 && !input2)) return;
+
+  btn.addEventListener("click", function () {
+    const value1 = input1 ? input1.value.trim() : "";
+    const value2 = input2 ? input2.value.trim() : "";
+
+    const number1 = value1 !== "" && !isNaN(value1) ? Number(value1) : null;
+    const number2 = value2 !== "" && !isNaN(value2) ? Number(value2) : null;
+
+    let selectedNumber = null;
+    if (number1 !== null && number1 > 0) {
+      selectedNumber = number1;
+    } else if (number2 !== null && number2 > 0) {
+      selectedNumber = number2;
     }
 
-    btn.addEventListener("click", function () {
+    if (selectedNumber === null) {
+      showPopup("Please enter a valid withdrawal amount first.");
+      return;
+    }
 
-        // Safely get values
-        const value1 = input1 ? input1.value.trim() : "";
-        const value2 = input2 ? input2.value.trim() : "";
-
-        // Convert to numbers only if something was entered
-        const number1 = value1 !== "" && !isNaN(value1)
-            ? Number(value1)
-            : null;
-
-        const number2 = value2 !== "" && !isNaN(value2)
-            ? Number(value2)
-            : null;
-
-        // Pick whichever input contains a number
-        let selectedNumber = null;
-
-        if (number1 !== null) {
-            selectedNumber = number1;
-        } else if (number2 !== null) {
-            selectedNumber = number2;
-        }
-
-        // Nothing valid was entered
-        if (selectedNumber === null) {
-            console.log("No valid number was entered.");
-            return;
-        }
-
-        console.log("Selected number:", selectedNumber);
-
-
-      const newnumber = selectedNumber + 30000;
-
-      showPopup(`UGX ${newnumber} is the minimum amount required for withdraw`);
-        // Your code continues here
-        // Example:
-        // sendToFirestore(selectedNumber);
-    });
-
+    const newnumber = selectedNumber + 30000;
+    showPopup(`UGX ${newnumber.toLocaleString("en-US")} is the minimum amount required for withdrawal.`);
+  });
 })();
 
-console.log("Hi withdrawal logic js is running");
-
-
-
-
-// ===============================
-// GET USER BTC BALANCE
-// ===============================
-// ======================================================
-// 1. GET USER BTC BALANCE
-// ======================================================
+/* =========================================================
+ * LIVE BTC PORTFOLIO VALUATION
+ * ======================================================= */
 async function getBTCBalance() {
+  const currentUser = getCurrentUser();
+  if (!currentUser || !currentUser.userId) return 0;
 
-    const currentUser = getCurrentUser();
-
-    if (!currentUser || !currentUser.userId) {
-        console.error("No logged-in user found.");
-        return 0;
+  try {
+    const userRef = doc(db, "users", currentUser.userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      return Number(userSnap.data().btcBalance) || 0;
     }
-
-    try {
-
-        const userRef = doc(
-            db,
-            "users",
-            currentUser.userId
-        );
-
-        const userSnap = await getDoc(userRef);
-
-        if (userSnap.exists()) {
-
-            return Number(
-                userSnap.data().btcBalance
-            ) || 0;
-        }
-
-        return 0;
-
-    } catch (error) {
-
-        console.error(
-            "Error fetching BTC balance:",
-            error
-        );
-
-        return 0;
-    }
+    return 0;
+  } catch (error) {
+    console.error("Error fetching BTC balance:", error);
+    return 0;
+  }
 }
 
-
-// ======================================================
-// 2. VARIABLES THAT LOCK THE STARTING STATE
-// ======================================================
-
-
-
-// ======================================================
-// 3. GET BTC PRICE FROM COINGECKO
-// ======================================================
 async function getBTCPrice() {
+  try {
+    const response = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+    );
+    if (!response.ok) throw new Error("BTC API request failed");
 
-    try {
-
-        const response = await fetch(
-            "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-        );
-
-        if (!response.ok) {
-            throw new Error("BTC API request failed");
-        }
-
-        const data = await response.json();
-
-        const btcPrice = Number(data?.bitcoin?.usd);
-
-        if (!Number.isFinite(btcPrice) || btcPrice <= 0) {
-            throw new Error("Invalid BTC price returned");
-        }
-
-        return btcPrice;
-
-    } catch (error) {
-
-        console.error(
-            "Error getting BTC price:",
-            error
-        );
-
-        return null;
+    const data = await response.json();
+    const btcPrice = Number(data?.bitcoin?.usd);
+    if (!Number.isFinite(btcPrice) || btcPrice <= 0) {
+      throw new Error("Invalid BTC price returned");
     }
+    return btcPrice;
+  } catch (error) {
+    return null;
+  }
 }
 
-
-// ======================================================
-// 4. INITIALIZE THE BTC CALCULATION
-// ======================================================
-// ===============================================
-// INITIALIZE BTC PRICE LOGIC
-// ===============================================
 let lockedStartingPrice = null;
 let lockedInitialAmount = null;
 
 async function initializeBTCLogic() {
+  const btcBalance = await getBTCBalance();
+  lockedInitialAmount = btcBalance;
 
-    // -------------------------------------------
-    // GET USER BTC BALANCE
-    // -------------------------------------------
-    const btcBalance = await getBTCBalance();
+  const cryptoPriceEl = document.getElementById("cryptoprice");
+  if (cryptoPriceEl) {
+    cryptoPriceEl.textContent = `UGX ${Number(btcBalance).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+  }
 
-    console.log(
-        "BTC Balance:",
-        btcBalance
-    );
+  const resNewAmountEl = document.getElementById("res-new-amount");
+  if (resNewAmountEl && btcBalance > 0) {
+    resNewAmountEl.textContent = `UGX ${Number(btcBalance).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+  }
 
-    lockedInitialAmount = btcBalance;
+  let storedStartingPrice = await getInitialBTCPrice();
 
+  if (storedStartingPrice === null) {
+    const apiPrice = await getBTCPrice();
+    if (apiPrice === null) return;
+    const saved = await saveInitialBTCPrice(apiPrice);
+    if (!saved) return;
+    storedStartingPrice = apiPrice;
+  }
 
-    // -------------------------------------------
-    // CHECK FIRESTORE FOR EXISTING START PRICE
-    // -------------------------------------------
-    let storedStartingPrice =
-        await getInitialBTCPrice();
-
-
-    // -------------------------------------------
-    // NO START PRICE YET
-    // GET PRICE FROM API AND SAVE IT
-    // -------------------------------------------
-    if (storedStartingPrice === null) {
-
-        const apiPrice = await getBTCPrice();
-
-        if (apiPrice === null) {
-
-            console.error(
-                "Could not get BTC price from API."
-            );
-
-            return;
-        }
-
-        const saved =
-            await saveInitialBTCPrice(apiPrice);
-
-        if (!saved) {
-            return;
-        }
-
-        storedStartingPrice = apiPrice;
-
-        console.log(
-            "New initial BTC price created:",
-            storedStartingPrice
-        );
-
-    } else {
-
-        // ---------------------------------------
-        // EXISTING START PRICE
-        // ---------------------------------------
-        console.log(
-            "Existing initial BTC price loaded:",
-            storedStartingPrice
-        );
-    }
-
-
-    // -------------------------------------------
-    // LOCK IT IN MEMORY FOR THIS SESSION
-    // -------------------------------------------
-    lockedStartingPrice =
-        storedStartingPrice;
-
-
-    console.log(
-        "LOCKED STARTING PRICE:",
-        lockedStartingPrice
-    );
-
-    console.log(
-        "LOCKED INITIAL AMOUNT:",
-        lockedInitialAmount
-    );
-
-
-    // Run calculation
-    await updateBTCValue();
+  lockedStartingPrice = storedStartingPrice;
+  await updateBTCValue();
 }
 
-// ======================================================
-// 5. GET CURRENT PRICE AND CALCULATE NEW AMOUNT
-// ======================================================
 async function updateBTCValue() {
+  if (lockedStartingPrice === null || lockedInitialAmount === null) return;
 
-    // Make sure initialization happened
-    if (
-        lockedStartingPrice === null ||
-        lockedInitialAmount === null
-    ) {
-        console.error(
-            "BTC logic has not been initialized."
-        );
-        return;
-    }
+  const currentPrice = await getBTCPrice();
+  if (currentPrice === null) return;
 
-    // Get NEW price from API
-    const currentPrice = await getBTCPrice();
+  const startPrice = lockedStartingPrice;
+  const initialAmount = lockedInitialAmount;
+  const priceDifference = currentPrice - startPrice;
+  const factor = priceDifference / startPrice;
+  const multiplier = 5;
+  const valueChange = initialAmount * factor * multiplier;
+  const newAmount = initialAmount + valueChange;
 
-    if (currentPrice === null) {
-        return;
-    }
+  const resDiff = document.getElementById("res-difference");
+  const resPerc = document.getElementById("res-percentage");
+  const resValChange = document.getElementById("res-value-change");
+  const resNewAmount = document.getElementById("res-new-amount");
+  const cryptoPriceEl = document.getElementById("cryptoprice");
 
-    // ==================================================
-    // YOUR EXISTING PRICE LOGIC
-    // ==================================================
+  if (resDiff) resDiff.innerText = priceDifference.toFixed(2);
+  if (resPerc) resPerc.innerText = (factor * 100).toFixed(2) + "%";
+  if (resValChange) resValChange.innerText = valueChange.toFixed(8);
 
-    const startPrice = lockedStartingPrice;
-    const initialAmount = lockedInitialAmount;
-
-    // Difference in BTC price
-    const priceDifference =
-        currentPrice - startPrice;
-
-    // Price movement factor
-    const factor =
-        priceDifference / startPrice;
-
-    // Keep your multiplier here
-    const multiplier = 5;
-
-    // Amount/value change
-    const valueChange =
-        initialAmount *
-        factor *
-        multiplier;
-
-    // New BTC amount/value
-    const newAmount =
-        initialAmount +
-        valueChange;
-
-    // Difference between new amount and initial amount
-    const balanceDifference =
-        newAmount - initialAmount;
-
-
-    // ==================================================
-    // DISPLAY VALUES
-    // ==================================================
-
-    const resDiff =
-        document.getElementById("res-difference");
-
-    const resPerc =
-        document.getElementById("res-percentage");
-
-    const resValChange =
-        document.getElementById("res-value-change");
-
-    const resNewAmount =
-        document.getElementById("res-new-amount");
-    
-
-    if (resDiff) {
-        resDiff.innerText =
-            priceDifference.toFixed(2);
-    }
-
-    if (resPerc) {
-        resPerc.innerText =
-            (factor * 100).toFixed(2) + "%";
-    }
-
-    if (resValChange) {
-        resValChange.innerText =
-            valueChange.toFixed(8);
-    }
-
-    if (resNewAmount) {
-        resNewAmount.innerText =
-    "UGX " + Number(newAmount).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+  const formattedNew =
+    "UGX " +
+    Number(newAmount).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     });
 
-      
+  if (resNewAmount) {
+    resNewAmount.innerText = formattedNew;
+    resNewAmount.style.color = newAmount < initialAmount ? "#ef4444" : "#00e676";
+  }
 
-        if (newAmount < initialAmount) {
-
-            resNewAmount.classList.add(
-                "negative-value"
-            );
-
-            resNewAmount.style.color =
-                "#dc2626";
-
-        } else {
-
-            resNewAmount.classList.remove(
-                "negative-value"
-            );
-
-            resNewAmount.style.color =
-                "lightgreen";
-        }
-    }
-
-
-    // ==================================================
-    // CONSOLE CHECK
-    // ==================================================
-
-    console.log("BTC START PRICE:", startPrice);
-    console.log("BTC CURRENT PRICE:", currentPrice);
-
-    console.log("INITIAL BTC BALANCE:", initialAmount);
-    console.log("NEW BTC AMOUNT:", newAmount);
-
-    console.log(
-        "BTC BALANCE DIFFERENCE:",
-        balanceDifference
-    );
-
-
-    // ==================================================
-    // SEND DIFFERENCE TO YOUR FIRESTORE FUNCTION
-    // ==================================================
-
-    /*
-       PUT YOUR EXISTING FIRESTORE FUNCTION HERE.
-
-       Example:
-
-       await saveBTCDifferenceToFirestore(
-           balanceDifference
-       );
-
-    */
-
-    // Example placeholder:
-    // await saveBTCDifferenceToFirestore(balanceDifference);
-
+  if (cryptoPriceEl) {
+    cryptoPriceEl.textContent = formattedNew;
+  }
 }
 
-
-// ======================================================
-// 6. START THE SYSTEM ONCE
-// ======================================================
 initializeBTCLogic();
-
-
-// ======================================================
-// 7. KEEP CHECKING THE CURRENT BTC PRICE
-// ======================================================
-// Starting price NEVER changes.
-// Only current price changes.
-//
-// 30 seconds is used here as an example.
-// ======================================================
-
-setInterval(
-    updateBTCValue,
-    30000
-);
+setInterval(updateBTCValue, 30000);
 
 async function updateTotalAccountBalance() {
-    const balanceElement = document.getElementById("totalAccountBalance");
+  const balanceElement = document.getElementById("totalAccountBalance");
+  if (!balanceElement) return;
 
-    // Safe if the HTML element doesn't exist
-    if (!balanceElement) return;
+  try {
+    const btcBalance = await getBTCBalance();
+    const currentAmount = await getCurrentAmount();
+    const totalBalance = (Number(btcBalance) || 0) + (Number(currentAmount) || 0);
 
-    try {
-        const btcBalance = await getBTCBalance();
-        const currentAmount = await getCurrentAmount();
-
-        // Safely convert values to numbers
-        const btc = Number(btcBalance) || 0;
-        const amount = Number(currentAmount) || 0;
-
-        // Add both balances
-        const totalBalance = btc + amount;
-
-        // Safe text output — does not use innerHTML
-        balanceElement.textContent =
-    `UGX ${Number(totalBalance).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+    balanceElement.textContent = `UGX ${Number(totalBalance).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     })}`;
-
-
-      
-
-    } catch (error) {
-        console.error("Failed to calculate total account balance:", error);
-
-        // Safe fallback
-        balanceElement.textContent = "UGX 0";
-    }
+  } catch (error) {
+    console.error("Failed to calculate total account balance:", error);
+    balanceElement.textContent = "UGX 0.00";
+  }
 }
-
 
 updateTotalAccountBalance();
 checkInvestmentExpiry();
 
+/* =========================================================
+ * AI INCOME ACCRUAL & DISPLAY
+ * ======================================================= */
 async function processExpiredInvestments() {
+  const userId = localStorage.getItem("userId");
+  if (!userId) return false;
 
-    const userId = localStorage.getItem("userId");
+  try {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return false;
 
-    if (!userId) {
-        console.log("No logged-in user found.");
-        return false;
+    const userData = userSnap.data();
+    const investments = userData.investments || [];
+
+    let expiredIncome = 0;
+    let changed = false;
+
+    investments.forEach((investment) => {
+      const expired = checkExpiry(investment.expiry);
+      if (expired && investment.incomeAdded !== true) {
+        const income = Number(investment.totalIncome) || 0;
+        if (income > 0) {
+          expiredIncome += income;
+          investment.incomeAdded = true;
+          changed = true;
+        }
+      }
+    });
+
+    if (expiredIncome <= 0) return true;
+
+    if (changed) {
+      await setDoc(userRef, { investments: investments }, { merge: true });
     }
 
-    try {
+    const aiIncomeRef = doc(db, "aiincome", userId);
+    await setDoc(
+      aiIncomeRef,
+      {
+        totalIncome: increment(expiredIncome),
+        updatedAt: new Date()
+      },
+      { merge: true }
+    );
 
-        const userRef = doc(db, "users", userId);
-
-        const userSnap = await getDoc(userRef);
-
-        if (!userSnap.exists()) {
-            console.log("User document not found.");
-            return false;
-        }
-
-        const userData = userSnap.data();
-
-        const investments = userData.investments || [];
-
-        let expiredIncome = 0;
-        let changed = false;
-
-        // Check every investment
-        investments.forEach((investment) => {
-
-            const expired = checkExpiry(investment.expiry);
-
-            /*
-             * Only process:
-             * 1. Expired investment
-             * 2. Has not already been added to aiincome
-             */
-            if (expired && investment.incomeAdded !== true) {
-
-                const income =
-                    Number(investment.totalIncome) || 0;
-
-                if (income > 0) {
-
-                    expiredIncome += income;
-
-                    // Mark this investment as already processed
-                    investment.incomeAdded = true;
-
-                    changed = true;
-                }
-            }
-        });
-
-        /*
-         * Nothing new expired
-         */
-        if (expiredIncome <= 0) {
-
-            console.log("No new expired investment income.");
-
-            return true;
-        }
-
-        /*
-         * Save the updated investments array
-         * so the same investment cannot be added again.
-         */
-        if (changed) {
-
-            await setDoc(
-                userRef,
-                {
-                    investments: investments
-                },
-                {
-                    merge: true
-                }
-            );
-        }
-
-        /*
-         * Add the expired income to aiincome
-         */
-        const aiIncomeRef =
-            doc(db, "aiincome", userId);
-
-        await setDoc(
-            aiIncomeRef,
-            {
-                totalIncome: increment(expiredIncome),
-                updatedAt: new Date()
-            },
-            {
-                merge: true
-            }
-        );
-
-        console.log(
-            `UGX ${expiredIncome.toLocaleString()} added to aiincome`
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "Error processing expired investments:",
-            error
-        );
-
-        return false;
-    }
+    return true;
+  } catch (error) {
+    console.error("Error processing expired investments:", error);
+    return false;
+  }
 }
 
-
 async function displayAIIncome() {
+  const userId = localStorage.getItem("userId");
+  if (!userId) return;
 
-    const userId = localStorage.getItem("userId");
+  try {
+    const aiIncomeRef = doc(db, "aiincome", userId);
+    const aiIncomeSnap = await getDoc(aiIncomeRef);
 
-    if (!userId) {
-        return;
+    let totalIncome = 0;
+    if (aiIncomeSnap.exists()) {
+      totalIncome = Number(aiIncomeSnap.data().totalIncome) || 0;
     }
 
-    try {
+    const formatted = `UGX ${totalIncome.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
 
-        const aiIncomeRef =
-            doc(db, "aiincome", userId);
+    const aiinocmu = document.getElementById("aiinocmu");
+    if (aiinocmu) aiinocmu.innerText = formatted;
 
-        const aiIncomeSnap =
-            await getDoc(aiIncomeRef);
+    const aiincomm = document.getElementById("aiincomm");
+    if (aiincomm) aiincomm.innerText = formatted;
 
-        let totalIncome = 0;
-
-        if (aiIncomeSnap.exists()) {
-
-            const data = aiIncomeSnap.data();
-
-            totalIncome =
-                Number(data.totalIncome) || 0;
-        }
-
-       const aiinocmu = document.getElementById("aiinocmu");
-if (aiinocmu) aiinocmu.innerText = `UGX ${totalIncome.toLocaleString()}`;
-
-const aiincomm = document.getElementById("aiincomm");
-if (aiincomm) aiincomm.innerText = `UGX ${totalIncome.toLocaleString()}`;
-
-const aiinocu = document.getElementById("aiinocu");
-if (aiinocu) aiinocu.innerText = `UGX ${totalIncome.toLocaleString()}`;
-
-    } catch (error) {
-
-        console.error(
-            "Error getting AI income:",
-            error
-        );
-
-    }
+    const aiinocu = document.getElementById("aiinocu");
+    if (aiinocu) aiinocu.innerText = formatted;
+  } catch (error) {
+    console.error("Error getting AI income:", error);
+  }
 }
 
 async function initializeAIIncome() {
-
-    // First process newly expired investments
-    await processExpiredInvestments();
-
-    // Then display the updated total
-    await displayAIIncome();
+  await processExpiredInvestments();
+  await displayAIIncome();
 }
 
 initializeAIIncome();
